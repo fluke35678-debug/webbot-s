@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}System Logs{% endblock %}
+{% block page_title %}System Logs{% endblock %}
+{% block page_subtitle %}Real-time event tracking and system diagnostics{% endblock %}
+
+{% block content %}
+<div class="logs-container h-full flex flex-col gap-4">
+
+    <!-- Controls -->
+    <div class="glass-panel-clean p-3 flex justify-between items-center">
+        <div class="flex gap-2">
+            <button class="filter-chip active" onclick="filterLogs('all')">ALL</button>
+            <button class="filter-chip" onclick="filterLogs('error')">ERRORS</button>
+            <button class="filter-chip" onclick="filterLogs('warning')">WARNINGS</button>
+            <button class="filter-chip" onclick="filterLogs('info')">INFO</button>
+        </div>
+        <div class="flex gap-3">
+            <div class="flex items-center gap-2 text-sm text-muted">
+                <span class="status-indicator live"></span> LIVE MONITORING
+            </div>
+            <button class="btn btn-soft btn-sm" onclick="clearLogs()"><i class="fa-solid fa-trash"></i> Clear</button>
+        </div>
+    </div>
+
+    <!-- Terminal Window -->
+    <div class="terminal-window custom-scrollbar">
+        <div class="terminal-header">
+            <div class="mac-buttons">
+                <span class="mac-btn close"></span>
+                <span class="mac-btn min"></span>
+                <span class="mac-btn max"></span>
+            </div>
+            <div class="terminal-title">root@godwin-server:~/logs</div>
+        </div>
+        <div class="terminal-body" id="log-output">
+            <!-- Logs injected here -->
+            <div class="log-entry info">
+                <span class="timestamp">[10:42:01]</span>
+                <span class="level">[INFO]</span>
+                <span class="message">System initialization metrics loaded successfully.</span>
+            </div>
+            <div class="log-entry success">
+                <span class="timestamp">[10:42:05]</span>
+                <span class="level">[OK]</span>
+                <span class="message">Database connection established @ economy.db</span>
+            </div>
+            <div class="log-entry warning">
+                <span class="timestamp">[10:45:12]</span>
+                <span class="level">[WARN]</span>
+                <span class="message">High latency detected on shard #2 (142ms)</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .logs-container {
+        height: calc(100vh - 160px);
+    }
+
+    .terminal-window {
+        background: #0f111a;
+        border: 1px solid #333;
+        border-radius: 12px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        font-family: 'Consolas', 'Monaco', monospace;
+    }
+
+    .terminal-header {
+        background: #1a1c29;
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #333;
+        position: relative;
+    }
+
+    .mac-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .mac-btn {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .mac-btn.close {
+        background: #ff5f56;
+    }
+
+    .mac-btn.min {
+        background: #ffbd2e;
+    }
+
+    .mac-btn.max {
+        background: #27c93f;
+    }
+
+    .terminal-title {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #888;
+        font-size: 0.8rem;
+    }
+
+    .terminal-body {
+        padding: 1rem;
+        flex: 1;
+        overflow-y: auto;
+        color: #ddd;
+        font-size: 0.9rem;
+    }
+
+    .terminal-body::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .terminal-body::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+    }
+
+    .log-entry {
+        margin-bottom: 4px;
+        line-height: 1.4;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        padding-bottom: 2px;
+    }
+
+    .timestamp {
+        color: #666;
+        margin-right: 8px;
+    }
+
+    .log-entry.info .level {
+        color: #667eea;
+        margin-right: 8px;
+    }
+
+    .log-entry.success .level {
+        color: #10b981;
+        margin-right: 8px;
+    }
+
+    .log-entry.warning .level {
+        color: #f59e0b;
+        margin-right: 8px;
+    }
+
+    .log-entry.error .level {
+        color: #ef4444;
+        margin-right: 8px;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #666;
+        display: inline-block;
+    }
+
+    .status-indicator.live {
+        background: #10b981;
+        box-shadow: 0 0 10px #10b981;
+        animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .filter-chip {
+        padding: 4px 12px;
+        font-size: 0.75rem;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #888;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .filter-chip:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .filter-chip.active {
+        background: #667eea;
+        color: #fff;
+    }
+</style>
+
+<script>
+    function filterLogs(type) {
+        // Logic to filter .log-entry elements by class
+        const entries = document.querySelectorAll('.log-entry');
+        entries.forEach(entry => {
+            if (type === 'all' || entry.classList.contains(type)) {
+                entry.style.display = 'block';
+            } else {
+                entry.style.display = 'none';
+            }
+        });
+
+        // Update active chip
+        document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function clearLogs() {
+        document.getElementById('log-output').innerHTML = '';
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'info',
+            title: 'Console cleared',
+            showConfirmButton: false,
+            timer: 1500,
+            background: '#1a1c29',
+            color: '#fff'
+        });
+    }
+
+    // Auto-scroll to bottom
+    const terminal = document.querySelector('.terminal-body');
+    terminal.scrollTop = terminal.scrollHeight;
+</script>
+{% endblock %}

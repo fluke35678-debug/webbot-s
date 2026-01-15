@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gacha Bot Control Center{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/economy.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <!-- Advanced Dynamic Background -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    <div class="backdrop-blur"></div>
+
+    <div class="app-container">
+        <!-- Premium Sidebar Navigation -->
+        <aside class="sidebar-nav">
+            <div class="nav-brand">
+                <div class="brand-logo"><i class="fa-solid fa-cube"></i> GODWIN</div>
+                <div class="brand-subtitle">ELITE CONTROL CENTER</div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-label">Main Module</div>
+                <a href="/economy" class="nav-item {% if request.url.path == '/economy' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                    <span class="label">Economy</span>
+                </a>
+                <a href="/shop" class="nav-item {% if request.url.path == '/shop' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-shop"></i></span>
+                    <span class="label">Shop</span>
+                </a>
+                <a href="/gacha" class="nav-item {% if request.url.path == '/gacha' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-dice"></i></span>
+                    <span class="label">Gacha</span>
+                </a>
+
+                <div class="nav-label">Management</div>
+                <a href="/servers" class="nav-item {% if request.url.path == '/servers' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-server"></i></span>
+                    <span class="label">Servers</span>
+                </a>
+                <a href="/members" class="nav-item {% if request.url.path == '/members' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-users-gear"></i></span>
+                    <span class="label">Members</span>
+                </a>
+                <a href="/users" class="nav-item {% if request.url.path == '/users' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-user-tag"></i></span>
+                    <span class="label">Users</span>
+                </a>
+                <a href="/verification" class="nav-item {% if request.url.path == '/verification' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-shield-halved"></i></span>
+                    <span class="label">Verification</span>
+                </a>
+
+                <div class="nav-label">System</div>
+                <a href="/analytics" class="nav-item {% if request.url.path == '/analytics' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-chart-line"></i></span>
+                    <span class="label">Analytics</span>
+                </a>
+                <a href="/announcements"
+                    class="nav-item {% if request.url.path == '/announcements' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-bullhorn"></i></span>
+                    <span class="label">Broadcast</span>
+                </a>
+                <a href="/logs" class="nav-item {% if request.url.path == '/logs' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-terminal"></i></span>
+                    <span class="label">Logs</span>
+                </a>
+                <a href="/settings" class="nav-item {% if request.url.path == '/settings' %}active{% endif %}">
+                    <span class="icon"><i class="fa-solid fa-gears"></i></span>
+                    <span class="label">Settings</span>
+                </a>
+            </nav>
+
+            <div class="nav-footer">
+                <div id="status-badge" class="status-pill {% if bot_online %}online{% else %}offline{% endif %}">
+                    <div class="dot"></div>
+                    <span>{% if bot_online %}SYSTEM ONLINE{% else %}SYSTEM OFFLINE{% endif %}</span>
+                </div>
+
+                {% if user %}
+                <div class="user-profile-mini">
+                    <div class="user-pill">
+                        <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png"
+                            class="user-avatar" onerror="this.src='/static/default_avatar.png'">
+                    </div>
+                    <div class="user-info-mini">
+                        <div class="u-name">{{ user.username }}</div>
+                        <a href="/logout" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                    <p class="page-subtitle">{% block page_subtitle %}Advanced Management Interface{% endblock %}</p>
+                </div>
+                <div class="header-actions">
+                    {% block header_actions %}{% endblock %}
+                </div>
+            </div>
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        // Status Poller with visual update
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                const badge = document.getElementById('status-badge');
+                const badgeText = badge.querySelector('span');
+
+                if (data.online) {
+                    badge.classList.remove('offline');
+                    badge.classList.add('online');
+                    badgeText.innerText = "SYSTEM ONLINE";
+                    badgeText.style.textShadow = "0 0 10px #00e676";
+                } else {
+                    badge.classList.remove('online');
+                    badge.classList.add('offline');
+                    badgeText.innerText = "SYSTEM OFFLINE";
+                    badgeText.style.textShadow = "none";
+                }
+            } catch (e) {
+                console.error("Status Poll Error:", e);
+            }
+        }
+        setInterval(updateStatus, 3000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,572 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - Control Center{% endblock %}
+{% block page_title %}Discord Chat Monitor{% endblock %}
+
+{% block content %}
+<div class="chat-container"
+    style="display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; height: calc(100vh - 180px);">
+
+    <!-- LEFT: Channel List -->
+    <div class="glass-panel-clean" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="padding: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div
+                style="font-size: 0.7rem; text-transform: uppercase; color: var(--primary); font-weight: 800; letter-spacing: 1px;">
+                TEXT CHANNELS
+            </div>
+        </div>
+        <div class="channel-list" style="flex: 1; overflow-y: auto; padding: 0.5rem;">
+            {% for ch_id, ch in channels.items() %}
+            <div class="channel-item" data-channel-id="{{ ch_id }}"
+                onclick="selectChannel('{{ ch_id }}', '{{ ch.name }}')"
+                style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: var(--text-muted);">
+                <span style="font-size: 1.2rem; opacity: 0.6;">#</span>
+                <span style="font-weight: 600; font-size: 0.9rem;">{{ ch.name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- RIGHT: Chat Area -->
+    <div class="glass-panel-clean" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+
+        <!-- Chat Header -->
+        <div class="chat-header"
+            style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 1.4rem; color: var(--text-muted);">#</span>
+            <span id="current-channel-name" style="font-weight: 700; font-size: 1.1rem;">เลือกห้องแชท</span>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+                <button onclick="refreshMessages()" class="btn btn-soft" style="padding: 8px 12px; font-size: 0.8rem;">
+                    🔄 Refresh
+                </button>
+                <div id="connection-status"
+                    style="font-size: 0.75rem; color: var(--success); display: flex; align-items: center; gap: 6px;">
+                    <span class="dot" style="width: 6px; height: 6px;"></span>
+                    <span>Live</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="messages-container"
+            style="flex: 1; overflow-y: auto; padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+            <div class="empty-state"
+                style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center;">
+                <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    style="opacity: 0.3; margin-bottom: 1rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                    </path>
+                </svg>
+                <div style="font-weight: 600;">เลือกห้องแชทจากเมนูด้านซ้าย</div>
+                <div style="font-size: 0.85rem; margin-top: 0.5rem;">ข้อความจะแสดงที่นี่แบบ Real-time</div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div id="input-area" style="padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: none;">
+            <!-- Reply Preview -->
+            <div id="reply-preview"
+                style="display: none; background: rgba(99,102,241,0.1); border-left: 3px solid var(--primary); padding: 8px 12px; margin-bottom: 10px; border-radius: 0 8px 8px 0; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">ตอบกลับ</span>
+                        <span id="reply-to-name" style="font-size: 0.85rem; font-weight: 600; margin-left: 8px;"></span>
+                    </div>
+                    <button type="button" onclick="cancelReply()"
+                        style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;">✕</button>
+                </div>
+                <div id="reply-to-content"
+                    style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px;">
+                </div>
+            </div>
+            <form id="message-form" onsubmit="sendMessage(event)"
+                style="display: flex; gap: 12px; align-items: flex-end;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Image URL Input (Optional) -->
+                    <div id="image-input-container" style="display: none;">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" id="image-url" placeholder="วาง URL รูปภาพที่นี่..."
+                                style="flex: 1; padding: 10px 14px; font-size: 0.9rem; border-radius: 8px;">
+                            <button type="button" onclick="toggleImageInput()"
+                                style="background: rgba(239,68,68,0.2); color: #f87171; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
+                                ✕
+                            </button>
+                        </div>
+                        <img id="image-preview" src=""
+                            style="max-width: 200px; max-height: 100px; border-radius: 8px; margin-top: 8px; display: none;">
+                    </div>
+                    <!-- Message Input -->
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" onclick="toggleImageInput()"
+                            style="background: rgba(99,102,241,0.2); color: var(--primary); border: none; padding: 12px 14px; border-radius: 12px; cursor: pointer; font-size: 1.1rem;"
+                            title="แนบรูปภาพ">
+                            📷
+                        </button>
+                        <input type="text" id="message-input" placeholder="พิมพ์ข้อความ..."
+                            style="flex: 1; padding: 14px 18px; font-size: 1rem; border-radius: 12px;"
+                            autocomplete="off">
+                        <button type="submit" class="btn btn-primary" style="padding: 14px 24px;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Original Theme Styles */
+    .channel-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+    }
+
+    .channel-item.active {
+        background: rgba(99, 102, 241, 0.2);
+        color: #fff;
+    }
+
+    .channel-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: 3px;
+        height: 100%;
+        background: var(--primary);
+        border-radius: 0 4px 4px 0;
+    }
+
+    .message-item {
+        display: flex;
+        gap: 14px;
+        padding: 10px 0;
+        transition: background 0.2s;
+    }
+
+    .message-item:hover {
+        background: rgba(255, 255, 255, 0.02);
+        margin: 0 -1rem;
+        padding: 10px 1rem;
+        border-radius: 8px;
+    }
+
+    .message-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .message-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .message-header {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .message-author {
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .message-text {
+        color: #dcddde;
+        line-height: 1.5;
+        word-wrap: break-word;
+    }
+
+    .bot-badge {
+        background: #5865f2;
+        color: #fff;
+        font-size: 0.6rem;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .reply-btn {
+        opacity: 0;
+        background: rgba(99, 102, 241, 0.2);
+        color: var(--primary);
+        border: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        transition: opacity 0.2s;
+    }
+
+    .message-item:hover .reply-btn {
+        opacity: 1;
+    }
+
+    .reply-btn:hover {
+        background: rgba(99, 102, 241, 0.4);
+    }
+
+    .glass-panel-clean {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        backdrop-filter: blur(12px);
+    }
+
+    .btn-soft {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-soft:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Markdown Styles from Update */
+    .md-bold {
+        font-weight: 700;
+    }
+
+    .md-italic {
+        font-style: italic;
+    }
+
+    .md-underline {
+        text-decoration: underline;
+    }
+
+    .md-strike {
+        text-decoration: line-through;
+    }
+
+    .md-code {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.2em;
+        margin: -0.2em 0;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 85%;
+    }
+
+    .md-pre {
+        background: rgba(0, 0, 0, 0.3);
+        font-family: monospace;
+        padding: 7px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #dcddde;
+        white-space: pre-wrap;
+        margin-top: 5px;
+    }
+
+    .md-quote {
+        display: flex;
+        margin: 4px 0 4px 0;
+    }
+
+    .md-quote-bar {
+        background-color: #4f545c;
+        width: 4px;
+        border-radius: 2px;
+        margin-right: 12px;
+    }
+
+    .md-quote-text {
+        opacity: 0.9;
+    }
+
+    .md-spoiler {
+        background-color: #202225;
+        color: transparent;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    .md-spoiler.revealed {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: inherit;
+    }
+
+    .md-h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0.6em 0 0.2em;
+    }
+
+    .md-h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0.5em 0 0.2em;
+    }
+
+    .md-h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0.4em 0 0.2em;
+    }
+
+    .message-content img {
+        max-width: 400px;
+        max-height: 300px;
+        border-radius: 8px;
+        margin-top: 8px;
+        display: block;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    let currentChannelId = null;
+    let pollInterval = null;
+    let replyToMessage = null;  // {id, author_name, content}
+
+    function selectChannel(channelId, channelName) {
+        currentChannelId = channelId;
+
+        // Update UI
+        document.getElementById('current-channel-name').innerText = channelName;
+        document.getElementById('input-area').style.display = 'block';
+        document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+        document.querySelector(`[data-channel-id="${channelId}"]`).classList.add('active');
+
+        // Clear and load messages
+        document.getElementById('messages-container').innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 2rem;">กำลังโหลดข้อความ...</div>';
+        loadMessages();
+
+        // Start polling
+        if (pollInterval) clearInterval(pollInterval);
+        pollInterval = setInterval(loadMessages, 3000);
+    }
+
+    async function loadMessages() {
+        if (!currentChannelId) return;
+
+        try {
+            const response = await fetch(`/api/messages/${currentChannelId}`);
+            const data = await response.json();
+
+            renderMessages(data.messages);
+        } catch (e) {
+            console.error('Error loading messages:', e);
+        }
+    }
+
+    function renderMessages(messages) {
+        const container = document.getElementById('messages-container');
+
+        if (!messages || messages.length === 0) {
+            container.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">💬</div>
+                    <div style="font-weight: 600;">ยังไม่มีข้อความใหม่</div>
+                    <div style="font-size: 0.85rem; margin-top: 0.5rem;">ข้อความที่ส่งใน Discord จะแสดงที่นี่</div>
+                </div>`;
+            return;
+        }
+
+        let html = '';
+        messages.forEach(msg => {
+            const time = new Date(msg.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            const avatarUrl = msg.author_avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            const roleColor = msg.author_color || '#fff'; // Use API provided color
+
+            html += `
+                <div class="message-item" data-msg-id="${msg.message_id}">
+                    <img src="${avatarUrl}" class="message-avatar" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-author" style="color: ${roleColor}">${escapeHtml(msg.author_name)}</span>
+                            ${msg.is_bot ? '<span class="bot-badge">BOT</span>' : ''}
+                            <span class="message-time">${time}</span>
+                            <button class="reply-btn" onclick="setReply('${msg.message_id}', '${escapeHtml(msg.author_name).replace(/'/g, "\\'")}', '${escapeHtml(msg.content || '').replace(/'/g, "\\\'")}')" title="ตอบกลับ">↩ ตอบกลับ</button>
+                        </div>
+                        <div class="message-text">${parseDiscordMarkdown(msg.content || '')}</div>
+                        ${renderAttachments(msg.attachments)}
+                    </div>
+                </div>`;
+        });
+
+        const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+        container.innerHTML = html;
+
+        // Auto-scroll to bottom if user was already at bottom
+        if (wasAtBottom) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    function renderAttachments(attachments) {
+        if (!attachments || !attachments.length) return '';
+        let html = '';
+        attachments.forEach(url => {
+            // Updated regex to handle query parameters (e.g. ?ex=...)
+            if (url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
+                html += `<img src="${url}" class="message-attachment" onclick="window.open('${url}', '_blank')">`;
+            } else {
+                html += `<div><a href="${url}" target="_blank" style="color: var(--primary);">📎 ${url.split('/').pop().split('?')[0]}</a></div>`;
+            }
+        });
+        return html;
+    }
+
+    // Markdown Parser
+    function parseDiscordMarkdown(text) {
+        if (!text) return '';
+        let escaped = escapeHtml(text);
+
+        // Code Blocks ```text```
+        escaped = escaped.replace(/```(?:([\w\d]+)\n)?([\s\S]*?)```/g, (match, lang, code) => {
+            return `<div class="md-pre"><code>${code.trim()}</code></div>`;
+        });
+        // Inline Code `text`
+        escaped = escaped.replace(/`([^`]+)`/g, '<code class="md-code">$1</code>');
+
+        // Headers (H1, H2, H3)
+        escaped = escaped.replace(/^#\s+(.*)$/gm, '<div class="md-h1">$1</div>');
+        escaped = escaped.replace(/^##\s+(.*)$/gm, '<div class="md-h2">$1</div>');
+        escaped = escaped.replace(/^###\s+(.*)$/gm, '<div class="md-h3">$1</div>');
+
+        // Bold **text**
+        escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<span class="md-bold">$1</span>');
+        // Italic *text*
+        escaped = escaped.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<span class="md-italic">$1</span>');
+        escaped = escaped.replace(/__([^_]+)__/g, '<span class="md-underline">$1</span>');
+        // Strike ~~text~~
+        escaped = escaped.replace(/~~([^~]+)~~/g, '<span class="md-strike">$1</span>');
+        // Spoiler ||text||
+        escaped = escaped.replace(/\|\|([^|]+)\|\|/g, '<span class="md-spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
+
+        // Blockquotes > text (Handle &gt; from escapeHtml)
+        escaped = escaped.replace(/^&gt;\s+(.*)$/gm, '<div class="md-quote"><div class="md-quote-bar"></div><div class="md-quote-text">$1</div></div>');
+
+        // URLs -> Links/Images (Better detection)
+        escaped = escaped.replace(
+            /(https?:\/\/[^\s<]+)/g,
+            (url) => {
+                // Remove trailing &quot; or other artifacts if any (rare with strict regex but possible)
+
+                // Flexible image check (allows query params like ?size=1024)
+                if (url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
+                    return `<a href="${url}" target="_blank" style="color:var(--primary);">${url}</a><br><img src="${url}">`;
+                }
+                return `<a href="${url}" target="_blank" style="color:var(--primary);">${url}</a>`;
+            }
+        );
+        return escaped.replace(/\n/g, '<br>');
+    }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    async function sendMessage(event) {
+        event.preventDefault();
+        if (!currentChannelId) {
+            alert('กรุณาเลือกห้องแชทก่อน');
+            return;
+        }
+
+        const contentInput = document.getElementById('message-input');
+        const imageInput = document.getElementById('image-url');
+        const content = contentInput.value.trim();
+        const imageUrl = imageInput ? imageInput.value.trim() : '';
+
+        if (!content && !imageUrl) return;
+
+        try {
+            const response = await fetch('/api/send-message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    channel_id: currentChannelId,
+                    content: content,
+                    image_url: imageUrl || null,
+                    reply_to_id: replyToMessage ? replyToMessage.id : null
+                })
+            });
+
+            if (response.ok) {
+                contentInput.value = '';
+                if (imageInput) {
+                    imageInput.value = '';
+                    document.getElementById('image-preview').style.display = 'none';
+                    document.getElementById('image-input-container').style.display = 'none';
+                }
+                cancelReply();
+                contentInput.focus();
+                setTimeout(loadMessages, 500);
+            } else {
+                alert('Failed to send message');
+            }
+        } catch (e) {
+            console.error('Error sending message:', e);
+        }
+    }
+
+    function toggleImageInput() {
+        const container = document.getElementById('image-input-container');
+        if (container.style.display === 'none') {
+            container.style.display = 'block';
+            document.getElementById('image-url').focus();
+        } else {
+            container.style.display = 'none';
+            document.getElementById('image-url').value = '';
+            document.getElementById('image-preview').style.display = 'none';
+        }
+    }
+
+    function setReply(messageId, authorName, content) {
+        replyToMessage = { id: messageId, author_name: authorName, content: content };
+        document.getElementById('reply-preview').style.display = 'block';
+        document.getElementById('reply-to-name').innerText = authorName;
+        document.getElementById('reply-to-content').innerText = content || '[รูปภาพ/ไฟล์]';
+        document.getElementById('message-input').focus();
+    }
+
+    function cancelReply() {
+        replyToMessage = null;
+        document.getElementById('reply-preview').style.display = 'none';
+    }
+
+    // Image preview
+    document.getElementById('image-url')?.addEventListener('input', function (e) {
+        const preview = document.getElementById('image-preview');
+        if (e.target.value && e.target.value.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+            preview.src = e.target.value;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+
+    // Auto-select first channel
+    document.addEventListener('DOMContentLoaded', function () {
+        const firstChannel = document.querySelector('.channel-item');
+        if (firstChannel) {
+            firstChannel.click();
+        }
+    });
+</script>
+{% endblock %}

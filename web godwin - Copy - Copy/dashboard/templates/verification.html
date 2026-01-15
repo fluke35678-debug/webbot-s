@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Verification - Control Center{% endblock %}
+{% block page_title %}🛡️ Verification System{% endblock %}
+
+{% block content %}
+<style>
+    .config-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-control {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 8px;
+        color: white;
+        font-family: inherit;
+    }
+
+    .form-control:focus {
+        border-color: #6366f1;
+        outline: none;
+    }
+
+    select.form-control option {
+        background: #1a1b23;
+    }
+
+    .preview-box {
+        background: #2f3136;
+        border-radius: 4px;
+        padding: 1rem;
+        border-left: 4px solid #10b981;
+        margin-top: 1rem;
+    }
+
+    .preview-title {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .preview-desc {
+        color: #dcddde;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .preview-btn {
+        background: #5865f2;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 3px;
+        display: inline-block;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .action-row {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-save {
+        flex: 1;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        padding: 1rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .btn-send {
+        flex: 1;
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        border: none;
+        padding: 1rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+</style>
+
+<div class="config-card">
+    <form action="/api/verification/update" method="POST" id="verifyForm">
+        <div class="form-group">
+            <label class="form-label">Verification Role</label>
+            <select name="role_id" class="form-control">
+                <option value="">Select a Role...</option>
+                {% for role in roles.values() %}
+                <option value="{{ role.id }}" {% if config.role_id==role.id|string %}selected{% endif %}
+                    style="color: {{ role.color }}">
+                    {{ role.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Verification Channel</label>
+            <select name="channel_id" class="form-control">
+                <option value="">Select a Channel...</option>
+                {% for cid, c in channels.items() %}
+                <option value="{{ cid }}" {% if config.channel_id==cid %}selected{% endif %}>#{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Embed Title</label>
+            <input type="text" name="embed_title" class="form-control"
+                value="{{ config.embed_title or 'Verification' }}" oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Embed Description</label>
+            <textarea name="embed_description" class="form-control" rows="3"
+                oninput="updatePreview()">{{ config.embed_description or 'Click the button below to verify yourself.' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Button Label</label>
+            <input type="text" name="button_label" class="form-control" value="{{ config.button_label or 'Verify ✅' }}"
+                oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Preview</label>
+            <div class="preview-box" id="previewBox">
+                <div class="preview-title" id="pTitle">Verification</div>
+                <div class="preview-desc" id="pDesc">Click the button below to verify yourself.</div>
+                <div class="preview-btn" id="pBtn">Verify ✅</div>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <button type="submit" name="action" value="save" class="btn-save">💾 Save Config</button>
+            <button type="submit" name="action" value="send" class="btn-send">🚀 Send Panel</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function updatePreview() {
+        document.getElementById('pTitle').innerText = document.querySelector('[name="embed_title"]').value;
+        document.getElementById('pDesc').innerText = document.querySelector('[name="embed_description"]').value;
+        document.getElementById('pBtn').innerText = document.querySelector('[name="button_label"]').value;
+    }
+
+    // Init preview
+    updatePreview();
+</script>
+{% endblock %}

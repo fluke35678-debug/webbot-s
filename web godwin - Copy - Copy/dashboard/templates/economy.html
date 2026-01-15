@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}Economy System{% endblock %}
+{% block page_title %}Economy Mainframe{% endblock %}
+{% block page_subtitle %}Manage your wealth and assets{% endblock %}
+
+{% block content %}
+<div class="economy-container">
+    <!-- Navigation Panel -->
+    <div class="gl-panel nav-panel fade-in-up">
+        <h3 class="nav-section-title">Operations</h3>
+
+        <button class="nav-btn active" onclick="showSection('bank')">
+            <i class="fa-solid fa-building-columns"></i> Bank & Wallet
+        </button>
+        <button class="nav-btn" onclick="showSection('games')">
+            <i class="fa-solid fa-gamepad"></i> Casino Games
+        </button>
+        <button class="nav-btn" onclick="showSection('jobs')">
+            <i class="fa-solid fa-briefcase"></i> Jobs & Work
+        </button>
+        <button class="nav-btn" onclick="showSection('pets')">
+            <i class="fa-solid fa-paw"></i> Pet Companion
+        </button>
+        <button class="nav-btn" onclick="showSection('mining')">
+            <i class="fa-solid fa-gem"></i> Crypto Mining
+        </button>
+        <button class="nav-btn" onclick="showSection('fishing')">
+            <i class="fa-solid fa-fish-fins"></i> Fishing
+        </button>
+
+        <div class="nav-spacer"></div>
+
+        <div class="daily-reward-section gl-card-hover">
+            <div class="flex-between mb-2">
+                <span class="badge badge-gold">DAILY LOGIN</span>
+                <span class="text-xs text-muted"><i class="fa-regular fa-clock"></i> Resets 00:00</span>
+            </div>
+            <button class="btn btn-primary btn-block glow-effect" onclick="claimDaily()">
+                <i class="fa-solid fa-gift"></i> Claim Reward
+            </button>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-panel custom-scrollbar">
+
+        <!-- BANK SECTION -->
+        <div id="section-bank" class="section-content fade-in">
+            <div class="grid-cols-2">
+                <!-- Balance Card -->
+                <div class="card gl-card aura-glow">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-wallet text-primary"></i> Current Balance</h3>
+                        <button class="btn-icon-soft" onclick="updateBalance()"><i
+                                class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                    <div class="card-body center-content">
+                        <div class="balance-display" id="wallet-balance">Loading...</div>
+                        <div class="currency-label">GODWIN COINS</div>
+                        <div class="mini-stats mt-4">
+                            <div class="stat-pill">
+                                <span class="label">Bank</span>
+                                <span class="value" id="bank-balance">...</span>
+                            </div>
+                            <div class="stat-pill">
+                                <span class="label">Net Worth</span>
+                                <span class="value text-success" id="net-worth">...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transfer Card -->
+                <div class="card gl-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-money-bill-transfer"></i> Quick Transfer</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group mb-4">
+                            <label class="input-label">Recipient ID</label>
+                            <div class="input-group">
+                                <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+                                <input type="number" id="transfer-target" class="input-modern"
+                                    placeholder="Enter User ID">
+                            </div>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="input-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-icon"><i class="fa-solid fa-coins"></i></span>
+                                <input type="number" id="transfer-amount" class="input-modern" placeholder="0.00">
+                            </div>
+                            <div class="quick-amounts">
+                                <button class="chip" onclick="setTransferAmount(100)">100</button>
+                                <button class="chip" onclick="setTransferAmount(1000)">1k</button>
+                                <button class="chip" onclick="setTransferAmount(10000)">10k</button>
+                                <button class="chip" onclick="setTransferAmount('all')">MAX</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block icon-btnbox" onclick="transferMoney()">
+                            <span>Confirm Transfer</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAMES SECTION -->
+        <div id="section-games" class="section-content hidden fade-in">
+            <h2 class="section-title"><i class="fa-solid fa-dice"></i> Casino Games</h2>
+            <div class="grid-cols-3">
+                <!-- Slots -->
+                <div class="card game-card-minimal gl-card-hover" onclick="showGame('slots')">
+                    <div class="game-icon-large floating-anim">🎰</div>
+                    <h3>Slots Machine</h3>
+                    <p class="text-xs text-muted mt-2">Spin to win big multipliers!</p>
+                    <div class="stat-group-minimal mt-3">
+                        <span class="text-success">Win Rate: 45%</span>
+                    </div>
+                </div>
+                <!-- Coinflip -->
+                <div class="card game-card-minimal gl-card-hover" onclick="showGame('coinflip')">
+                    <div class="game-icon-large floating-anim delay-1">🪙</div>
+                    <h3>Coin Flip</h3>
+                    <p class="text-xs text-muted mt-2">Double or nothing. Dare?</p>
+                    <div class="stat-group-minimal mt-3">
+                        <span class="text-warning">Risky</span>
+                    </div>
+                </div>
+                <!-- Dice -->
+                <div class="card game-card-minimal gl-card-hover" onclick="showGame('dice')">
+                    <div class="game-icon-large floating-anim delay-2">🎲</div>
+                    <h3>Dice Roll</h3>
+                    <p class="text-xs text-muted mt-2">Roll high to multiply your bet.</p>
+                    <div class="stat-group-minimal mt-3">
+                        <span class="text-primary">Strategic</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Result Area -->
+            <div id="game-result-area" class="card mt-4 hidden gl-card border-glow">
+                <div class="center-text p-4">
+                    <div id="result-animation"></div>
+                    <div id="result-message" class="text-lg font-bold"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JOBS SECTION -->
+        <div id="section-jobs" class="section-content hidden fade-in">
+            <h2 class="section-title"><i class="fa-solid fa-briefcase"></i> Available Contracts</h2>
+            <div class="grid-cols-2" id="job-list">
+                <div class="card job-card gl-card">
+                    <div class="flex-center p-4">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Loading Jobs...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PETS SECTION -->
+        <div id="section-pets" class="section-content hidden fade-in">
+            <!-- Ensure Pet Check happens in JS -->
+            <div class="card gl-card p-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-20">
+                    <i class="fa-solid fa-paw text-9xl"></i>
+                </div>
+
+                <div class="flex flex-col items-center z-10 relative">
+                    <div class="pet-avatar-lg mb-4 glow-effect">
+                        {% if pet %}
+                        <i class="fa-solid fa-cat text-6xl"></i>
+                        {% else %}
+                        <i class="fa-solid fa-question text-6xl text-muted"></i>
+                        {% endif %}
+                    </div>
+
+                    <h2 class="text-2xl font-bold mb-1">{% if pet %}{{ pet.name }}{% else %}No Companion{% endif %}</h2>
+                    <p class="text-muted mb-6">{% if pet %}Level {{ pet.level }} • {{ pet.type }}{% else %}Adopt a pet
+                        to start your journey{% endif %}</p>
+
+                    {% if pet %}
+                    <div class="w-full max-w-md space-y-4 mb-8">
+                        <div>
+                            <div class="flex-between text-xs mb-1">
+                                <span><i class="fa-solid fa-utensils"></i> Hunger</span>
+                                <span>{{ pet.hunger or 100 }}%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill bg-warning" style="width: {{ pet.hunger or 100 }}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex-between text-xs mb-1">
+                                <span><i class="fa-solid fa-heart"></i> Happiness</span>
+                                <span>{{ pet.happiness or 100 }}%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill bg-danger" style="width: {{ pet.happiness or 100 }}%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button class="btn btn-soft" onclick="interactPet('FEED')">
+                            <i class="fa-solid fa-bowl-food"></i> Feed ($50)
+                        </button>
+                        <button class="btn btn-primary" onclick="interactPet('PLAY')">
+                            <i class="fa-solid fa-baseball"></i> Play
+                        </button>
+                    </div>
+                    {% else %}
+                    <button class="btn btn-primary" onclick="showSection('shop')">Visit Pet Shop</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- MINING SECTION -->
+        <div id="section-mining" class="section-content hidden fade-in">
+            <div class="grid-cols-2">
+                <!-- Status Card -->
+                <div class="card gl-card p-5">
+                    <h3 class="text-muted uppercase text-xs mb-4">Mining Rig Status</h3>
+                    <div class="flex items-center gap-4 mb-6">
+                        <i class="fa-brands fa-bitcoin text-5xl text-warning"></i>
+                        <div>
+                            <div class="text-3xl font-bold" id="mining-rate">Loading...</div>
+                            <div class="text-xs text-muted">Coins / Hour</div>
+                        </div>
+                    </div>
+
+                    <div class="mining-console mb-4">
+                        <div class="console-line">> System initialized...</div>
+                        <div class="console-line">> GPU Connection: Stable</div>
+                        <div class="console-line active">> Hashing... <span class="blink">_</span></div>
+                    </div>
+
+                    <div class="flex-between mt-auto">
+                        <div>
+                            <div class="text-xs text-muted">Pending Rewards</div>
+                            <div class="text-xl font-bold text-success" id="mining-pending">0.00</div>
+                        </div>
+                        <button class="btn btn-success" onclick="collectMining()">
+                            <i class="fa-solid fa-download"></i> Collect
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Upgrade Card -->
+                <div class="card gl-card p-5 flex flex-col justify-center items-center text-center">
+                    <h3 class="text-muted uppercase text-xs mb-4">Hardware Upgrade</h3>
+                    <div class="mb-4">
+                        <div class="text-4xl mb-2">🖥️</div>
+                        <div class="font-bold text-lg" id="mining-gpu">GTX 1050</div>
+                        <div class="text-xs text-muted">Current GPU</div>
+                    </div>
+
+                    <div class="arrow-down mb-4"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <div class="mb-6">
+                        <div class="font-bold text-lg text-primary" id="mining-next-gpu">RTX 3060</div>
+                        <div class="text-xs text-muted">Next Tier</div>
+                    </div>
+
+                    <button class="btn btn-primary w-full" onclick="upgradeMining()" id="btn-upgrade-mining">
+                        Upgrade (<span id="mining-cost">2000</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FISHING SECTION -->
+        <div id="section-fishing" class="section-content hidden fade-in">
+            <div class="card gl-card center-text p-8 relative overflow-hidden fishing-zone">
+                <div class="water-bg"></div>
+
+                <div class="relative z-10">
+                    <h2 class="mb-2 text-2xl">Deep Sea Fishing</h2>
+                    <p class="text-muted mb-8">Cast your line and wait for a bite!</p>
+
+                    <div class="fishing-visual mb-8">
+                        <div class="bobber" id="fishing-bobber">
+                            <i class="fa-solid fa-circle-dot text-danger"></i>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg rounded-full px-8" id="btn-fish" onclick="castLine()">
+                        <i class="fa-solid fa-fish-fins"></i> CAST LINE
+                    </button>
+
+                    <div id="fishing-result" class="mt-6 h-8 text-sm font-bold"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Game Modals -->
+<div id="game-modal-slots" class="modal-overlay hidden">
+    <div class="glass-panel-clean p-5 relative">
+        <button class="close-btn" onclick="closeModals()"><i class="fa-solid fa-xmark"></i></button>
+        <h2 class="text-center text-gradient-vibrant mb-4">🎰 SLOTS MACHINE</h2>
+        <div class="slot-machine-display mb-4">
+            <div class="slot-reel" id="reel-1">?</div>
+            <div class="slot-reel" id="reel-2">?</div>
+            <div class="slot-reel" id="reel-3">?</div>
+        </div>
+        <div class="flex-center gap-2 mb-4">
+            <input type="number" id="slots-bet" class="input-minimal w-1/2" placeholder="Bet Amount" value="100">
+            <button class="btn btn-primary w-1/2" onclick="playSlots()">SPIN</button>
+        </div>
+        <div id="slots-status" class="text-center text-sm"></div>
+    </div>
+</div>
+
+<style>
+    /* Inline overrides for quick fixes, ideally move to economy.css */
+    .quick-amounts {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .chip {
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-size: 0.75rem;
+    }
+
+    .chip:hover {
+        background: var(--primary);
+    }
+</style>
+
+<!-- Scripts -->
+<script src="/static/economy.js"></script>
+<script>
+    // Tab Switching Logic
+    function showSection(sectionId) {
+        document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById('section-' + sectionId).classList.remove('hidden');
+
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    // Modal Logic
+    function closeModals() {
+        document.querySelectorAll('.modal-overlay').forEach(el => el.classList.add('hidden'));
+    }
+
+    function showGame(gameType) {
+        if (gameType === 'slots') {
+            document.getElementById('game-modal-slots').classList.remove('hidden');
+        } else {
+            Swal.fire({
+                title: 'Coming Soon',
+                text: 'This game is under maintenance.',
+                icon: 'info',
+                background: '#0a0e27',
+                color: '#fff'
+            });
+        }
+    }
+
+    function updateBalance() {
+        // Mock data for demo - ideally fetch from API
+        document.getElementById('wallet-balance').innerText = "50,240";
+        document.getElementById('bank-balance').innerText = "1,200,000";
+        document.getElementById('net-worth').innerText = "1,250,240";
+    }
+
+    function setTransferAmount(amount) {
+        if (amount === 'all') amount = 50240;
+        document.getElementById('transfer-amount').value = amount;
+    }
+
+    function transferMoney() {
+        Swal.fire({
+            title: 'Processing...',
+            timer: 1000,
+            didOpen: () => Swal.showLoading(),
+            background: '#0a0e27',
+            color: '#fff'
+        }).then(() => {
+            Swal.fire('Transferred', 'Money sent successfully', 'success');
+        });
+    }
+
+    function claimDaily() {
+        Swal.fire({
+            title: 'Daily Reward',
+            text: 'You received 1,000 Coins!',
+            icon: 'success',
+            background: '#0a0e27',
+            color: '#fff'
+        });
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        updateBalance();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Godwin Control Center | Login</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Prompt:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #00f2fe;
+            --bg: #050508;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Prompt', sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-gradient {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(102, 126, 234, 0.2) 0%, transparent 60%),
+                radial-gradient(circle at 90% 80%, rgba(118, 75, 162, 0.2) 0%, transparent 60%);
+            z-index: 0;
+            animation: pulse-bg 10s infinite alternate;
+        }
+
+        .particles {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(#ffffff 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.1;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: top;
+            animation: scroll-grid 20s linear infinite;
+        }
+
+        /* Login Container */
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem 4rem;
+            border-radius: 24px;
+            text-align: center;
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            max-width: 450px;
+            width: 90%;
+            transition: transform 0.3s;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .brand-icon {
+            font-size: 4rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 15px rgba(102, 126, 234, 0.5));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        p.subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 2.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-discord {
+            background: #5865F2;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1.1rem;
+            box-shadow: 0 10px 20px rgba(88, 101, 242, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-discord:hover {
+            background: #4752c4;
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(88, 101, 242, 0.5);
+        }
+
+        .btn-discord:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Animations */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes pulse-bg {
+            0% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scroll-grid {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 100px;
+            }
+        }
+
+        /* Glow Elements */
+        .glow-sphere {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 1;
+            filter: blur(40px);
+        }
+
+        .sphere-1 {
+            top: -100px;
+            left: -100px;
+            animation: float 6s infinite alternate;
+        }
+
+        .sphere-2 {
+            bottom: -100px;
+            right: -100px;
+            animation: float 8s infinite alternate-reverse;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.3) 0%, transparent 70%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-gradient"></div>
+    <div class="particles"></div>
+
+    <div class="glow-sphere sphere-1"></div>
+    <div class="glow-sphere sphere-2"></div>
+
+    <div class="login-card">
+        <div class="brand-icon">
+            <i class="fa-solid fa-cube"></i>
+        </div>
+        <h1>Godwin Elite</h1>
+        <p class="subtitle">Secure Control Terminal Access</p>
+
+        <a href="/login?next=%2F" class="btn-discord">
+            <i class="fa-brands fa-discord"></i> Login with Discord
+        </a>
+
+        <div class="footer">
+            System ready. v3.4.1 stable<br>
+            Authorized personnel only.
+        </div>
+    </div>
+
+</body>
+
+</html>

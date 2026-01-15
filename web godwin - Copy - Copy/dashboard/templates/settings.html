@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings{% endblock %}
+{% block page_title %}Configurations{% endblock %}
+{% block page_subtitle %}Adjust system parameters and bot preferences{% endblock %}
+
+{% block content %}
+<div class="settings-container max-w-4xl mx-auto">
+
+    <div class="settings-grid">
+        <!-- General Bot Settings -->
+        <div class="card gl-card p-6">
+            <h3 class="section-title"><i class="fa-solid fa-robot"></i> General Settings</h3>
+
+            <form id="general-settings-form">
+                <div class="form-group mb-4">
+                    <label class="block text-sm uppercase text-muted mb-2">Bot Name</label>
+                    <input type="text" class="input-modern" value="Godwin Bot">
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="block text-sm uppercase text-muted mb-2">Command Prefix</label>
+                    <input type="text" class="input-modern" value="!">
+                </div>
+
+                <div class="form-group mb-6">
+                    <label class="block text-sm uppercase text-muted mb-2">Status Activity</label>
+                    <div class="flex gap-2">
+                        <select class="input-modern w-1/3">
+                            <option>Playing</option>
+                            <option>Watching</option>
+                            <option>Listening</option>
+                        </select>
+                        <input type="text" class="input-modern w-2/3" value="Economy System v3.0">
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- Economy Tuning -->
+        <div class="card gl-card p-6">
+            <h3 class="section-title"><i class="fa-solid fa-chart-pie"></i> Economy Balancing</h3>
+
+            <div class="setting-row flex-between mb-4">
+                <div>
+                    <div class="font-bold">Daily Reward</div>
+                    <div class="text-xs text-muted">Amount of coins given daily</div>
+                </div>
+                <input type="number" class="input-tiny w-24 text-center" value="1000">
+            </div>
+
+            <div class="setting-row flex-between mb-4">
+                <div>
+                    <div class="font-bold">Weekly Reward</div>
+                    <div class="text-xs text-muted">Amount of coins given weekly</div>
+                </div>
+                <input type="number" class="input-tiny w-24 text-center" value="5000">
+            </div>
+
+            <div class="setting-row flex-between mb-4">
+                <div>
+                    <div class="font-bold">Work Cooldown</div>
+                    <div class="text-xs text-muted">Minutes between work commands</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="range" class="range-slider" min="1" max="60" value="30">
+                    <span class="text-sm font-mono">30m</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Toggle -->
+        <div class="card gl-card p-6">
+            <h3 class="section-title"><i class="fa-solid fa-toggle-on"></i> Module Control</h3>
+
+            <div class="toggle-row flex-between p-3 border-b border-white/5">
+                <div class="flex gap-3 items-center">
+                    <i class="fa-solid fa-shop text-primary"></i>
+                    <span>Shop System</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row flex-between p-3 border-b border-white/5">
+                <div class="flex gap-3 items-center">
+                    <i class="fa-solid fa-dice text-warning"></i>
+                    <span>Gambling Games</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row flex-between p-3 border-b border-white/5">
+                <div class="flex gap-3 items-center">
+                    <i class="fa-solid fa-shield-cat text-danger"></i>
+                    <span>Robbery System</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    @media(min-width: 900px) {
+        .settings-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .input-modern {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        padding: 0.8rem;
+        color: #fff;
+        width: 100%;
+        transition: all 0.2s;
+    }
+
+    .input-modern:focus {
+        border-color: var(--primary);
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .input-tiny {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--glass-border);
+        border-radius: 6px;
+        padding: 0.4rem;
+        color: #fff;
+    }
+
+    /* Switch Slider */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked+.slider {
+        background-color: var(--primary);
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(26px);
+    }
+
+    .flex-between {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+
+<script>
+    function saveSettings() {
+        Swal.fire({
+            title: 'Saving...',
+            timer: 1000,
+            didOpen: () => Swal.showLoading(),
+            background: '#0a0e27',
+            color: '#fff'
+        }).then(() => {
+            Swal.fire('Saved', 'System configuration updated', 'success');
+        });
+    }
+</script>
+{% endblock %}

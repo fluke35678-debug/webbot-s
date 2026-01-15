@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Gacha Configuration - Godwin Intelligence{% endblock %}
+
+{% block page_title %}Gacha Configuration{% endblock %}
+
+{% block content %}
+<div class="economy-container">
+    <div class="economy-header">
+        <h2 class="section-title">🎲 Gacha Settings & Customization</h2>
+        <div class="header-actions">
+            <!-- Random Embed Sender -->
+            <form action="/api/embed/random" method="post" class="inline-form">
+                <select name="channel_id" class="input-modern" required>
+                    <option value="" disabled selected>Select Channel</option>
+                    {% for cid, cdata in channels.items() %}
+                    <option value="{{ cid }}"># {{ cdata.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-modern btn-accent">
+                    <span>🎲 Send Random Embed</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <form method="post" action="/gacha/update">
+        <div class="gacha-grid">
+            {% for s in settings %}
+            <div class="glass-card gacha-card">
+                <div class="card-header">
+                    <h3 class="rank-name {{ s.rank_name.lower() }}">{{ s.rank_name }}</h3>
+                    <div class="percentage-input">
+                        <input type="number" step="0.1" name="{{ s.rank_name }}_percentage" value="{{ s.percentage }}"
+                            class="input-modern compact">
+                        <span>%</span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Reward Roles (JSON Array)</label>
+                        <input type="text" name="{{ s.rank_name }}_roles" value="{{ s.reward_roles_json }}"
+                            class="input-modern" placeholder='["1234..."]'>
+                    </div>
+
+                    <div class="divider">Embed Customization</div>
+
+                    <div class="form-group">
+                        <label>Embed Title</label>
+                        <input type="text" name="{{ s.rank_name }}_title" value="{{ s.embed_title }}"
+                            class="input-modern">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Embed Description</label>
+                        <textarea name="{{ s.rank_name }}_description" class="input-modern"
+                            rows="2">{{ s.embed_description }}</textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Embed Color (Hex)</label>
+                            <input type="color" name="{{ s.rank_name }}_color" value="{{ s.embed_color }}"
+                                class="input-color">
+                        </div>
+                        <div class="form-group">
+                            <label>Footer Text</label>
+                            <input type="text" name="{{ s.rank_name }}_footer" value="{{ s.embed_footer }}"
+                                class="input-modern">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="text" name="{{ s.rank_name }}_image" value="{{ s.embed_image_url }}"
+                            class="input-modern">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Thumbnail URL</label>
+                        <input type="text" name="{{ s.rank_name }}_thumbnail" value="{{ s.embed_thumbnail_url }}"
+                            class="input-modern">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="bottom-actions">
+            <button type="submit" class="btn-modern btn-primary">
+                <span>📂 Save All Settings</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .gacha-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 24px;
+        margin-bottom: 30px;
+    }
+
+    .gacha-card {
+        padding: 24px;
+        transition: transform 0.3s ease;
+    }
+
+    .gacha-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .rank-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .rank-name.legendary {
+        color: #f1c40f;
+        text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+    }
+
+    .rank-name.epic {
+        color: #9b59b6;
+        text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+    }
+
+    .rank-name.rare {
+        color: #3498db;
+        text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+    }
+
+    .rank-name.common {
+        color: #2ecc71;
+        text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    }
+
+    .rank-name.salt {
+        color: #95a5a6;
+        text-shadow: 0 0 10px rgba(149, 165, 166, 0.5);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 15px;
+    }
+
+    .divider {
+        margin: 20px 0 15px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.4);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 100px 1fr;
+        gap: 15px;
+    }
+
+    .input-color {
+        width: 100%;
+        height: 45px;
+        padding: 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+    .bottom-actions {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .btn-accent {
+        background: linear-gradient(135deg, #ff4d4d, #f9cb28);
+        color: white;
+    }
+</style>
+{% endblock %}

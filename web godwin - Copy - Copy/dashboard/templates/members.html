@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}Members Management{% endblock %}
+{% block page_title %}Squadron Members{% endblock %}
+{% block page_subtitle %}Manage server members and permissions{% endblock %}
+
+{% block content %}
+<div class="members-container">
+
+    <!-- Controls -->
+    <div class="glass-panel-clean p-4 mb-6 flex-between">
+        <div class="search-bar-wrapper max-w-lg">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input type="text" class="search-input" id="member-search" placeholder="Search by name or ID...">
+        </div>
+        <div class="flex gap-3">
+            <button class="btn btn-soft"><i class="fa-solid fa-filter"></i> Filter</button>
+            <button class="btn btn-primary" onclick="syncMembers()"><i class="fa-solid fa-rotate"></i> Sync
+                Members</button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid-cols-4 mb-6">
+        <div class="card gl-card p-4">
+            <div class="text-muted text-xs uppercase mb-1">Total Members</div>
+            <div class="text-2xl font-bold">{{ total_count }}</div>
+        </div>
+        <div class="card gl-card p-4">
+            <div class="text-muted text-xs uppercase mb-1">Online</div>
+            <div class="text-2xl font-bold text-success">
+                {{ online_count }}
+            </div>
+        </div>
+        <div class="card gl-card p-4">
+            <div class="text-muted text-xs uppercase mb-1">New Today</div>
+            <div class="text-2xl font-bold text-primary">+{{ new_members_count }}</div>
+        </div>
+        <div class="card gl-card p-4">
+            <div class="text-muted text-xs uppercase mb-1">Banned</div>
+            <div class="text-2xl font-bold text-danger">3</div>
+        </div>
+    </div>
+
+    <!-- Members Grid (Grouped by Squadron/Role) -->
+    <div id="members-grid">
+        {% for role_id, group in grouped_members.items() %}
+        <div class="squadron-section mb-12">
+            <div class="squadron-header flex items-center gap-3 mb-6 pb-2"
+                style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div class="w-1 h-6 rounded-full" style="background: {{ group.color }}"></div>
+                <h2 class="text-xl font-bold m-0 tracking-wide">{{ group.name }}</h2>
+                <span class="text-xs text-muted uppercase tracking-wider ml-auto">{{ group.members|length }} MEMS</span>
+            </div>
+
+            <div class="grid-cols-3 gap-6">
+                {% for member in group.members %}
+                <div class="card member-card gl-card-hover minimal-card">
+                    <div class="member-header">
+                        <div class="member-avatar-wrapper">
+                            <img src="{{ member.avatar_url }}" alt="Avatar" class="member-avatar"
+                                onerror="this.src='/static/default_avatar.png'">
+                            <div class="status-dot {{ member.status }}"></div>
+                        </div>
+                        <div class="member-info">
+                            <h3 class="member-name">{{ member.name }}</h3>
+                            <div style="font-size: 0.75rem; color: #888; margin-bottom: 2px;">@{{ member.username }}
+                            </div>
+                            <div class="member-id text-muted text-xs copy-btn"
+                                onclick="copyToClipboard('{{ member.id }}')">
+                                {{ member.id }} <i class="fa-regular fa-copy ml-1"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="member-roles mt-3">
+                        {% for role in member.roles[:2] %}
+                        <span class="role-pill" style="border-color: {{ role.color }}; color: {{ role.color }}">{{
+                            role.name
+                            }}</span>
+                        {% endfor %}
+                        {% if member.roles|length > 2 %}
+                        <span class="role-pill text-muted">+{{ member.roles|length - 2 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="member-joined mt-3 text-xs text-muted">
+                        <i class="fa-regular fa-calendar"></i> Joined: {{ member.joined_at }}
+                    </div>
+
+                    <div class="member-actions mt-4 opacity-0 transition-opacity member-card:hover:opacity-100">
+                        <button class="btn btn-soft btn-sm" onclick="viewProfile('{{ member.id }}')">Profile</button>
+                        <div class="dropdown">
+                            <button class="btn btn-soft btn-sm icon-only"><i
+                                    class="fa-solid fa-ellipsis-vertical"></i></button>
+                            <div class="dropdown-content">
+                                <a onclick="kickMember('{{ member.id }}')"><i
+                                        class="fa-solid fa-user-xmark text-warning"></i>
+                                    Kick</a>
+                                <a onclick="banMember('{{ member.id }}')"><i class="fa-solid fa-gavel text-danger"></i>
+                                    Ban</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-muted">No members found in this group.</div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination mt-6 center-content">
+        <button class="btn btn-soft btn-sm"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="px-4 text-muted">Page 1 of 5</span>
+        <button class="btn btn-soft btn-sm"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+
+</div>
+
+<style>
+    .search-bar-wrapper {
+        position: relative;
+        flex: 1;
+    }
+
+    .search-input {
+        width: 100%;
+        padding-left: 2.5rem;
+        border-radius: 50px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--glass-border);
+        color: #fff;
+        padding-top: 0.6rem;
+        padding-bottom: 0.6rem;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+    }
+
+    .member-card {
+        padding: 1.25rem;
+        transition: all 0.2s;
+    }
+
+    .member-card:hover .member-actions {
+        opacity: 1;
+    }
+
+    .member-actions {
+        opacity: 0.4;
+        transition: opacity 0.2s;
+    }
+
+    .minimal-card {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        box-shadow: none !important;
+    }
+
+    .minimal-card:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        transform: translateY(-2px);
+    }
+
+    .minimal-card {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        box-shadow: none !important;
+    }
+
+    .minimal-card:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        transform: translateY(-2px);
+    }
+
+    .member-header {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .member-avatar-wrapper {
+        position: relative;
+    }
+
+    .member-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-dot {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid #1e293b;
+    }
+
+    .status-dot.online {
+        background: #10b981;
+    }
+
+    .status-dot.offline {
+        background: #94a3b8;
+    }
+
+    .status-dot.idle {
+        background: #f59e0b;
+    }
+
+    .status-dot.dnd {
+        background: #ef4444;
+    }
+
+    .member-name {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px;
+    }
+
+    .role-pill {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: inline-block;
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+
+    .badge-bot {
+        background: #5865F2;
+        color: white;
+        font-size: 0.6rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .member-actions {
+        display: flex;
+        gap: 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 1rem;
+    }
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: #1e293b;
+        min-width: 140px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        z-index: 1;
+    }
+
+    .dropdown-content a {
+        color: white;
+        padding: 10px 14px;
+        text-decoration: none;
+        display: block;
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+
+    .dropdown-content a:hover {
+        background-color: #334155;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    /* Simple CSS Hover dropdown, or click-based if preferred. Hover is easier to implement without extra JS toggle logic context */
+
+    .icon-only {
+        width: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+        Swal.fire({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 2000,
+            icon: 'success',
+            title: 'Copied ID: ' + text,
+            background: '#1e293b',
+            color: '#fff'
+        });
+    }
+
+    function syncMembers() {
+        Swal.fire({
+            title: 'Syncing...',
+            text: 'Fetching latest member data from Discord',
+            didOpen: () => Swal.showLoading(),
+            background: '#0a0e27',
+            color: '#fff'
+        });
+        // In reality, this would trigger a backend refresh endpoint if one existed specifically for sync.
+        // For now, relies on cache expiry or manual page reload.
+        setTimeout(() => {
+            location.reload();
+        }, 1500);
+    }
+
+    function viewProfile(id) {
+        // Redirect to users page filtered by ID
+        window.location.href = `/users?search=${id}`;
+    }
+
+    async function kickMember(id) {
+        const { isConfirmed } = await Swal.fire({
+            title: 'Kick Member?',
+            text: "Are you sure you want to kick this user?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff9800',
+            confirmButtonText: 'Yes, Kick',
+            background: '#0a0e27',
+            color: '#fff'
+        });
+
+        if (isConfirmed) {
+            submitAction('KICK', id);
+        }
+    }
+
+    async function banMember(id) {
+        const { value: reason } = await Swal.fire({
+            title: 'Ban Member?',
+            input: 'text',
+            inputLabel: 'Reason',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, Ban',
+            background: '#0a0e27',
+            color: '#fff'
+        });
+
+        if (reason) {
+            submitAction('BAN', id, reason);
+        }
+    }
+
+    async function submitAction(action, id, reason = "Admin Action") {
+        try {
+            const res = await fetch('/api/admin/member-action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: action, user_id: id, reason: reason })
+            });
+            const result = await res.json();
+            Swal.fire('Sent', result.message, 'success');
+        } catch (e) {
+            Swal.fire('Error', 'Failed to send command', 'error');
+        }
+    }
+</script>
+{% endblock %}

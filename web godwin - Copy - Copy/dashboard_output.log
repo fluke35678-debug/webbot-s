@@ -1,0 +1,26 @@
+DEBUG: SQL Query: SELECT * FROM audit_logs  ORDER BY timestamp DESC LIMIT 100 | Params: []
+DEBUG: Reading from c:/test/audit_logs.db
+DEBUG: Found 7 logs
+Fetched 183 roles total from 0 guilds (cached count)
+INFO:     127.0.0.1:64163 - "GET /logs?executor=&category= HTTP/1.1" 200 OK
+DEBUG: SQL Query: SELECT * FROM audit_logs  ORDER BY timestamp DESC LIMIT 100 | Params: []
+DEBUG: Reading from c:/test/audit_logs.db
+DEBUG: Found 7 logs
+INFO:     127.0.0.1:64163 - "GET /logs?executor=&category= HTTP/1.1" 200 OK
+DEBUG: SQL Query: SELECT * FROM audit_logs  ORDER BY timestamp DESC LIMIT 100 | Params: []
+DEBUG: Reading from c:/test/audit_logs.db
+DEBUG: Found 7 logs
+INFO:     127.0.0.1:64163 - "GET /logs?executor=&category= HTTP/1.1" 200 OK
+DEBUG: SQL Query: SELECT * FROM audit_logs  ORDER BY timestamp DESC LIMIT 100 | Params: []
+DEBUG: Reading from c:/test/audit_logs.db
+DEBUG: Found 7 logs
+INFO:     127.0.0.1:64163 - "GET /logs?executor=&category= HTTP/1.1" 200 OK
+DEBUG: SQL Query: SELECT * FROM audit_logs  ORDER BY timestamp DESC LIMIT 100 | Params: []
+DEBUG: Reading from c:/test/audit_logs.db
+DEBUG: Found 7 logs
+INFO:     127.0.0.1:64163 - "GET /logs?executor=&category= HTTP/1.1" 200 OK
+DEBUG: SQL Query: SELECT * FROM audit_logs  ORDER BY timestamp DESC LIMIT 100 | Params: []
+DEBUG: Reading from c:/test/audit_logs.db
+DEBUG: Found 7 logs
+INFO:     127.0.0.1:64163 - "GET /logs?executor=&category= HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64164 - "GET /users HTTP/1.1" 200 OK

@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-white mb-3">
+            <i class="fas fa-filter me-2 text-warning"></i>Discord Token Separator
+        </h2>
+        <p class="text-white-50">Check validity, verification status, and Nitro of your tokens.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Input Section -->
+    <div class="col-lg-4 mb-4">
+        <div class="card bg-dark text-white border-0 shadow-lg"
+            style="background: rgba(30, 30, 40, 0.8); backdrop-filter: blur(10px);">
+            <div class="card-header border-0 bg-transparent">
+                <h5 class="mb-0"><i class="fas fa-paste me-2"></i>Input Tokens</h5>
+            </div>
+            <div class="card-body">
+                <form id="tokenForm">
+                    <div class="mb-3">
+                        <textarea class="form-control bg-dark text-white border-secondary" id="tokenInput" rows="15"
+                            placeholder="Paste tokens here (one per line)..." style="resize: none;"></textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary" id="checkBtn">
+                            <i class="fas fa-search me-2"></i>Start Checking
+                        </button>
+                        <button type="button" class="btn btn-danger d-none" id="stopBtn">
+                            <i class="fas fa-stop me-2"></i>Stop
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-3">
+                    <label class="small text-muted mb-1">Progress</label>
+                    <div class="progress bg-secondary" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" id="progressBar" style="width: 0%">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-white-50 mt-1">
+                        <span id="progressText">0/0</span>
+                        <span id="statusText">Idle</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="col-lg-8">
+        <div class="row">
+            <!-- Nitro Tokens -->
+            <div class="col-md-6 mb-3">
+                <div class="card bg-dark text-white border-primary h-100" style="background: rgba(30, 40, 60, 0.8);">
+                    <div
+                        class="card-header border-primary bg-transparent d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-primary"><i class="fas fa-gem me-2"></i>Nitro (<span
+                                id="countNitro">0</span>)</h6>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" data-target="listNitro"><i
+                                class="fas fa-copy"></i></button>
+                    </div>
+                    <div class="card-body p-2">
+                        <textarea class="form-control bg-transparent text-white border-0 small" id="listNitro" rows="6"
+                            readonly></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verified Tokens -->
+            <div class="col-md-6 mb-3">
+                <div class="card bg-dark text-white border-success h-100" style="background: rgba(30, 50, 40, 0.8);">
+                    <div
+                        class="card-header border-success bg-transparent d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-success"><i class="fas fa-check-circle me-2"></i>Verified (<span
+                                id="countVerified">0</span>)</h6>
+                        <button class="btn btn-sm btn-outline-success copy-btn" data-target="listVerified"><i
+                                class="fas fa-copy"></i></button>
+                    </div>
+                    <div class="card-body p-2">
+                        <textarea class="form-control bg-transparent text-white border-0 small" id="listVerified"
+                            rows="6" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unverified Tokens -->
+            <div class="col-md-6 mb-3">
+                <div class="card bg-dark text-white border-warning h-100" style="background: rgba(50, 40, 20, 0.8);">
+                    <div
+                        class="card-header border-warning bg-transparent d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-warning"><i class="fas fa-exclamation-circle me-2"></i>Unverified (<span
+                                id="countUnverified">0</span>)</h6>
+                        <button class="btn btn-sm btn-outline-warning copy-btn" data-target="listUnverified"><i
+                                class="fas fa-copy"></i></button>
+                    </div>
+                    <div class="card-body p-2">
+                        <textarea class="form-control bg-transparent text-white border-0 small" id="listUnverified"
+                            rows="6" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invalid Tokens -->
+            <div class="col-md-6 mb-3">
+                <div class="card bg-dark text-white border-danger h-100" style="background: rgba(50, 20, 20, 0.8);">
+                    <div
+                        class="card-header border-danger bg-transparent d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-danger"><i class="fas fa-times-circle me-2"></i>Invalid / Locked (<span
+                                id="countInvalid">0</span>)</h6>
+                        <button class="btn btn-sm btn-outline-danger copy-btn" data-target="listInvalid"><i
+                                class="fas fa-copy"></i></button>
+                    </div>
+                    <div class="card-body p-2">
+                        <textarea class="form-control bg-transparent text-white border-0 small" id="listInvalid"
+                            rows="6" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const tokenForm = document.getElementById('tokenForm');
+    const tokenInput = document.getElementById('tokenInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const statusText = document.getElementById('statusText');
+
+    let abortController = null;
+
+    tokenForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const tokens = tokenInput.value.trim();
+        if (!tokens) return alert('Please enter tokens!');
+
+        // Reset UI
+        checkBtn.classList.add('d-none');
+        stopBtn.classList.remove('d-none');
+        progressBar.style.width = '0%';
+        progressText.innerText = '0/0';
+        statusText.innerText = 'Initializing...';
+
+        ['listNitro', 'listVerified', 'listUnverified', 'listInvalid'].forEach(id => {
+            document.getElementById(id).value = '';
+            document.getElementById(id.replace('list', 'count')).innerText = '0';
+        });
+
+        abortController = new AbortController();
+        const formData = new FormData();
+        formData.append('tokens', tokens);
+
+        try {
+            const response = await fetch('/api/check_tokens', {
+                method: 'POST',
+                body: formData,
+                signal: abortController.signal
+            });
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let totalTokens = 0;
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (!line || !line.trim()) continue;
+
+                    try {
+                        const msg = JSON.parse(line);
+
+                        if (msg.type === 'start') {
+                            totalTokens = msg.total;
+                            statusText.innerText = 'Checking...';
+                        } else if (msg.type === 'result') {
+                            updateUI(msg.data, msg.progress, totalTokens);
+                        } else if (msg.type === 'done') {
+                            statusText.innerText = 'Done!';
+                        } else if (msg.type === 'error') {
+                            alert(msg.message);
+                        }
+                    } catch (err) {
+                        console.error('Parse error:', err);
+                    }
+                }
+            }
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                statusText.innerText = 'Stopped.';
+            } else {
+                statusText.innerText = 'Error: ' + err.message;
+            }
+        } finally {
+            checkBtn.classList.remove('d-none');
+            stopBtn.classList.add('d-none');
+            abortController = null;
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        if (abortController) abortController.abort();
+    });
+
+    function updateUI(data, current, total) {
+        // Update Progress
+        const percent = (current / total) * 100;
+        progressBar.style.width = percent + '%';
+        progressText.innerText = `${current}/${total}`;
+
+        // Categorize
+        let targetId = 'listInvalid';
+
+        if (data.valid) {
+            if (data.nitro !== 'None') {
+                targetId = 'listNitro';
+            } else if (data.verified) { // Email verified
+                targetId = 'listVerified';
+            } else {
+                targetId = 'listUnverified';
+            }
+        }
+
+        // Append to textarea
+        const textarea = document.getElementById(targetId);
+        textarea.value += data.token + '\n';
+
+        // Update count
+        const countSpan = document.getElementById(targetId.replace('list', 'count'));
+        countSpan.innerText = parseInt(countSpan.innerText) + 1;
+    }
+
+    // Copy Functionality
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const textarea = document.getElementById(targetId);
+            textarea.select();
+            document.execCommand('copy');
+
+            // Visual feedback
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => btn.innerHTML = originalIcon, 1000);
+        });
+    });
+</script>
+{% endblock %}

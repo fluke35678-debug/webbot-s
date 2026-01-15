@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Server - GODWIN</title>
+    <!-- Use Preconnect for Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.4);
+            --accent: #06b6d4;
+            --dark-bg: #030712;
+            --card-bg: rgba(17, 24, 39, 0.6);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-dim: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--dark-bg);
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.3;
+            }
+
+            90% {
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px 40px;
+            z-index: 10;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 16px 6px 6px;
+            border-radius: 50px;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .user-pill:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .section-label {
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            color: var(--accent);
+            margin-bottom: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(6, 182, 212, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            letter-spacing: -1px;
+            text-shadow: 0 0 40px rgba(79, 70, 229, 0.3);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 50px;
+            width: 100%;
+            max-width: 500px;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        .search-wrapper {
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .search-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 16px 50px;
+            color: white;
+            font-size: 1.1rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(156, 163, 175, 0.5);
+        }
+
+        .refresh-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: var(--text-dim);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        /* Grid Layout */
+        .servers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+            perspective: 1000px;
+        }
+
+        .server-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInScale 0.5s ease-out backwards;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Staggered Animation Delay for cards */
+        .server-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .server-card:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .server-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .server-card:nth-child(4) {
+            animation-delay: 0.25s;
+        }
+
+        .server-card:nth-child(5) {
+            animation-delay: 0.3s;
+        }
+
+        /* ... up to a reasonable number, handled by loop if needed or CSS preprocessor */
+
+        .server-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(30, 41, 59, 0.8);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px var(--primary-glow);
+        }
+
+        .server-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.06), transparent 40%);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .server-card:hover::after {
+            opacity: 1;
+        }
+
+        .server-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.4s ease;
+        }
+
+        .server-card:hover .server-icon {
+            transform: scale(1.1) rotate(3deg);
+        }
+
+        .no-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #374151, #1f2937);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .card-content {
+            flex: 1;
+            min-width: 0;
+            /* for ellipsis */
+            z-index: 1;
+        }
+
+        .server-name {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .server-meta {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        .arrow-icon {
+            color: var(--text-dim);
+            font-size: 1.2rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .server-card:hover .arrow-icon {
+            opacity: 1;
+            transform: translateX(0);
+            color: var(--primary);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <nav class="navbar">
+        {% if user %}
+        <div class="user-pill">
+            <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" class="user-avatar"
+                alt="Profile">
+            <span style="font-weight: 500; font-size: 0.9rem;">{{ user.username }}</span>
+        </div>
+        {% endif %}
+    </nav>
+
+    <div class="main-container">
+        <div class="hero-section">
+            <div class="section-label">Dashboard Access</div>
+            <h1 class="main-title">Select a Server</h1>
+            <p style="color: var(--text-dim); margin-top: 15px; font-size: 1.1rem;">Choose the server you want to manage
+                with Godwin</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="serverSearch" placeholder="Type name or ID to filter...">
+                <button class="refresh-btn" onclick="location.reload()" title="Refresh List"><i
+                        class="fas fa-sync-alt"></i></button>
+            </div>
+        </div>
+
+        <div class="servers-grid" id="serverGrid">
+            {% for guild in guilds %}
+            <div class="server-card" onclick="selectServer('{{ guild.id }}')">
+                {% if guild.icon %}
+                <img src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png" class="server-icon"
+                    alt="{{ guild.name }}">
+                {% else %}
+                <div class="server-icon no-icon">{{ guild.name[:2] }}</div>
+                {% endif %}
+
+                <div class="card-content">
+                    <div class="server-name" title="{{ guild.name }}">{{ guild.name }}</div>
+                    <div class="server-meta">
+                        <span class="status-dot"></span>
+                        <span>Active</span>
+                    </div>
+                </div>
+
+                <i class="fas fa-arrow-right arrow-icon"></i>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <form id="selectForm" method="POST" style="display: none;"></form>
+
+    <script>
+        // Generate Particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            p.style.left = Math.random() * 100 + '%';
+            p.style.width = Math.random() * 4 + 1 + 'px';
+            p.style.height = p.style.width;
+            p.style.animationDuration = Math.random() * 20 + 10 + 's';
+            p.style.animationDelay = Math.random() * 5 + 's';
+            particlesContainer.appendChild(p);
+        }
+
+        // Card Hover Effect (Mouse Follow)
+        document.getElementById("serverGrid").onmousemove = e => {
+            for (const card of document.getElementsByClassName("server-card")) {
+                const rect = card.getBoundingClientRect(),
+                    x = e.clientX - rect.left,
+                    y = e.clientY - rect.top;
+
+                card.style.setProperty("--mouse-x", `${x}px`);
+                card.style.setProperty("--mouse-y", `${y}px`);
+            }
+        };
+
+        function selectServer(guildId) {
+            const form = document.getElementById('selectForm');
+            form.action = `/api/set_server/${guildId}`;
+            form.submit();
+        }
+
+        // Search Filter
+        const searchInput = document.getElementById('serverSearch');
+        const cards = document.querySelectorAll('.server-card');
+
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            cards.forEach(card => {
+                const name = card.querySelector('.server-name').innerText.toLowerCase();
+                const id = card.getAttribute('onclick')?.match(/'(\d+)'/)[1] || "";
+
+                if (name.includes(term) || id.includes(term)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

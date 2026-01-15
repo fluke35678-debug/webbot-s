@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Server Setup{% endblock %}
+{% block page_title %}First-Time Server Setup{% endblock %}
+
+{% block content %}
+<div class="glass-panel" style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>
+        <h2>Server Initialization</h2>
+        <p style="color: var(--text-muted);">One-click setup to create all necessary channels and categories for the
+            bot.</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3>What will happen?</h3>
+        <ul style="color: var(--text-muted); line-height: 1.6; margin-left: 1.5rem;">
+            <li>Create Category <b>ECONOMY & CASINO</b></li>
+            <li>Create Channel <b>#💰-economy</b> (For commands)</li>
+            <li>Create Channel <b>#🎰-casino</b> (For gambling games)</li>
+            <li>Create Channel <b>#🛒-shop</b> (For item purchases)</li>
+            <li>Create Channel <b>#📜-logs</b> (For transaction audits)</li>
+        </ul>
+    </div>
+
+    <div id="setup-status" class="card hidden" style="background: rgba(0,0,0,0.2); margin-bottom: 2rem;">
+        <h4 style="margin-bottom: 0.5rem;">Log:</h4>
+        <pre id="setup-log"
+            style="font-family: monospace; font-size: 0.85rem; color: #10b981; white-space: pre-wrap;"></pre>
+    </div>
+
+    <div style="text-align: center;">
+        <input type="text" id="guild-id" placeholder="Target Guild ID (Optional)" class="input-field"
+            style="width: 300px; margin-bottom: 1rem; text-align: center;">
+        <br>
+        <button onclick="runSetup()" id="btn-setup" class="btn btn-primary btn-lg"
+            style="padding: 1rem 3rem; font-size: 1.2rem;">
+            START SETUP
+        </button>
+    </div>
+</div>
+
+<script>
+    async function runSetup() {
+        if (!confirm('This will create new channels in your server. Continue?')) return;
+
+        const btn = document.getElementById('btn-setup');
+        const log = document.getElementById('setup-log');
+        const statusDiv = document.getElementById('setup-status');
+        const guildId = document.getElementById('guild-id').value;
+
+        btn.disabled = true;
+        btn.innerText = "Running Setup...";
+        statusDiv.classList.remove('hidden');
+        log.innerText = "Initializing connection...\n";
+
+        try {
+            const formData = new FormData();
+            if (guildId) formData.append('guild_id', guildId);
+
+            const res = await fetch('/api/setup/channels', {
+                method: 'POST',
+                body: formData
+            });
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const text = decoder.decode(value);
+                log.innerText += text;
+                // Auto scroll
+                statusDiv.scrollTop = statusDiv.scrollHeight;
+            }
+
+            btn.innerText = "Setup Complete";
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-success');
+        } catch (e) {
+            log.innerText += `\nError: ${e}`;
+            btn.disabled = false;
+            btn.innerText = "Retry Setup";
+        }
+    }
+</script>
+{% endblock %}

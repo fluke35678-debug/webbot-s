@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% block title %}Analytics - Control Center{% endblock %}
+{% block page_title %}📊 Analytics Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.5rem;
+    }
+
+    .stat-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .stat-card-title {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-card-icon {
+        font-size: 1.5rem;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.2;
+    }
+
+    .stat-change {
+        font-size: 0.85rem;
+        color: #10b981;
+        margin-top: 0.5rem;
+    }
+
+    .stat-change.negative {
+        color: #ef4444;
+    }
+
+    .chart-container {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .leaderboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .leaderboard-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.5rem;
+    }
+
+    .leaderboard-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .leaderboard-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+    }
+
+    .leaderboard-rank {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.9rem;
+    }
+
+    .leaderboard-rank.gold {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .leaderboard-rank.silver {
+        background: linear-gradient(135deg, #9ca3af, #6b7280);
+    }
+
+    .leaderboard-rank.bronze {
+        background: linear-gradient(135deg, #d97706, #b45309);
+    }
+
+    .leaderboard-info {
+        flex: 1;
+    }
+
+    .leaderboard-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .leaderboard-value {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .distribution-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .dist-item {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .dist-name {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 0.5rem;
+    }
+
+    .dist-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .dist-item.legendary .dist-value {
+        color: #f59e0b;
+    }
+
+    .dist-item.epic .dist-value {
+        color: #a855f7;
+    }
+
+    .dist-item.rare .dist-value {
+        color: #3b82f6;
+    }
+
+    .dist-item.common .dist-value {
+        color: #6b7280;
+    }
+
+    .dist-item.salt .dist-value {
+        color: #22c55e;
+    }
+</style>
+
+<!-- Stats Overview -->
+<div class="analytics-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Total Tickets</span>
+            <span class="stat-card-icon">🎟️</span>
+        </div>
+        <div class="stat-value">{{ economy.total_tickets|default(0)|int }}</div>
+        <div class="stat-change">ตั๋วทั้งหมดในระบบ</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Total Salt</span>
+            <span class="stat-card-icon">🧂</span>
+        </div>
+        <div class="stat-value">{{ economy.total_salt|default(0)|int }}</div>
+        <div class="stat-change">เกลือทั้งหมดในระบบ</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-title">Bot Status</span>
+            <span class="stat-card-icon">🤖</span>
+        </div>
+        <div class="stat-value" style="{{ 'color: #10b981;' if bot_online else 'color: #ef4444;' }}">
+            {{ 'ONLINE' if bot_online else 'OFFLINE' }}
+        </div>
+        <div class="stat-change">สถานะระบบ</div>
+    </div>
+</div>
+
+<!-- Gacha Distribution -->
+<div class="chart-container">
+    <div class="chart-title">🎲 Gacha Pull Distribution</div>
+    <div class="distribution-grid">
+        {% for name, count in distribution.items() %}
+        <div class="dist-item {{ name|lower }}">
+            <div class="dist-name">{{ name }}</div>
+            <div class="dist-value">{{ count }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Activity Chart -->
+<div class="chart-container">
+    <div class="chart-title">📈 Activity (Last 7 Days)</div>
+    <canvas id="activityChart" height="100"></canvas>
+</div>
+
+<!-- Leaderboards -->
+<div class="leaderboard-grid">
+    <div class="leaderboard-card">
+        <div class="leaderboard-title">🎟️ Top Tickets</div>
+        {% for item in leaderboard.tickets %}
+        <div class="leaderboard-item">
+            <div
+                class="leaderboard-rank {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                {{ loop.index }}
+            </div>
+            <div class="leaderboard-info">
+                <div class="leaderboard-name">{{ item.name }}</div>
+                <div class="leaderboard-value">{{ item.val }} ตั๋ว</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="leaderboard-card">
+        <div class="leaderboard-title">🧂 Top Salt</div>
+        {% for item in leaderboard.salt %}
+        <div class="leaderboard-item">
+            <div
+                class="leaderboard-rank {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                {{ loop.index }}
+            </div>
+            <div class="leaderboard-info">
+                <div class="leaderboard-name">{{ item.name }}</div>
+                <div class="leaderboard-value">{{ item.val }} 🧂</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Activity Chart
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    const growthData = {{ growth| tojson }};
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: growthData.map(d => d.date).reverse(),
+            datasets: [{
+                label: 'Gacha Pulls',
+                data: growthData.map(d => d.count).reverse(),
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointBackgroundColor: '#6366f1'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.5)'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.5)'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

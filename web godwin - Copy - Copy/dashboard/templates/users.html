@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}User Database{% endblock %}
+{% block page_title %}User Database{% endblock %}
+{% block page_subtitle %}Centralized User Records & Economy Stats{% endblock %}
+
+{% block content %}
+<div class="users-container">
+
+    <!-- Search & Filter Controls -->
+    <div class="glass-panel-clean p-4 mb-6">
+        <div class="flex gap-4">
+            <div class="search-bar-wrapper">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input type="text" class="search-input" id="user-search"
+                    placeholder="Search by username, ID, or wallet address..." onkeyup="filterUsers()">
+            </div>
+            <div class="flex gap-2">
+                <button class="btn btn-soft" onclick="sortBy('rank')">Sort by Rank</button>
+                <button class="btn btn-soft" onclick="sortBy('balance')">Sort by Balance</button>
+                <button class="btn btn-soft" onclick="sortBy('joined')">Sort by Date</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Grid -->
+    <div class="grid-cols-3" id="users-grid">
+        {% for user in users %}
+        <div class="card user-card gl-card-hover" data-name="{{ user.username }}" data-id="{{ user.id }}"
+            data-rank="{{ user.highest_pos }}" data-balance="{{ user.wallet }}" data-joined="{{ user.joined_at }}">
+            <div class="user-card-header mb-4">
+                <div class="user-avatar-lg">
+                    <img src="{{ user.avatar_url }}" alt="AV" onerror="this.src='/static/default_avatar.png'">
+                </div>
+                <div class="user-main-info">
+                    <h3>{{ user.name }}</h3>
+                    <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 4px;">@{{ user.username }}</div>
+                    <div class="flex gap-2">
+                        <span class="user-chip">#{{ user.discriminator }}</span>
+                        <span class="role-badge"
+                            style="border-color: {{ user.role_color }}; color: {{ user.role_color }};">{{ user.top_role
+                            }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-mini-grid mb-4">
+                <div class="stat-box">
+                    <div class="label">Wallet</div>
+                    <div class="value text-warning"><i class="fa-solid fa-coins"></i> {{ user.wallet }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Bank</div>
+                    <div class="value text-primary"><i class="fa-solid fa-university"></i> {{ user.bank }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">XP</div>
+                    <div class="value text-info">{{ user.xp }}</div>
+                </div>
+            </div>
+
+            <div class="user-card-actions">
+                <button class="btn btn-soft btn-sm w-full" onclick="manageUser('{{ user.id }}')">
+                    <i class="fa-solid fa-sliders"></i> Manage
+                </button>
+                <div class="flex gap-2 w-full">
+                    <button class="btn btn-success btn-xs flex-1" onclick="addBalance('{{ user.id }}')">+ Money</button>
+                    <button class="btn btn-danger btn-xs flex-1" onclick="banUser('{{ user.id }}')">Ban</button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-span-3 text-center p-8 text-muted">
+            No users found in database.
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<style>
+    .user-card {
+        padding: 1.5rem;
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+    }
+
+    .user-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar-lg {
+        width: 60px;
+        height: 60px;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .user-avatar-lg img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .user-main-info h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .user-chip {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        background: rgba(255, 255, 255, 0.05);
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .role-badge {
+        font-size: 0.75rem;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px solid;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stats-mini-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 0.8rem;
+        border-radius: 12px;
+    }
+
+    .stat-box {
+        text-align: center;
+    }
+
+    .stat-box .label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 2px;
+    }
+
+    .stat-box .value {
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .user-card-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .search-bar-wrapper {
+        position: relative;
+        flex: 1;
+    }
+
+    .search-input {
+        width: 100%;
+        padding-left: 2.5rem;
+        border-radius: 50px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--glass-border);
+        color: #fff;
+        padding-top: 0.6rem;
+        padding-bottom: 0.6rem;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+    }
+</style>
+
+<script>
+    function sortBy(criteria) {
+        const grid = document.getElementById('users-grid');
+        const cards = Array.from(grid.getElementsByClassName('user-card'));
+
+        cards.sort((a, b) => {
+            let valA, valB;
+            if (criteria === 'rank') {
+                valA = parseInt(a.getAttribute('data-rank')) || -1;
+                valB = parseInt(b.getAttribute('data-rank')) || -1;
+                return valB - valA; // Descending
+            } else if (criteria === 'balance') {
+                valA = parseFloat(a.getAttribute('data-balance')) || 0;
+                valB = parseFloat(b.getAttribute('data-balance')) || 0;
+                return valB - valA; // Descending
+            } else if (criteria === 'joined') {
+                valA = a.getAttribute('data-joined') || '';
+                valB = b.getAttribute('data-joined') || '';
+                if (!valA) return 1;
+                if (!valB) return -1;
+                return valA.localeCompare(valB); // Ascending
+            }
+        });
+
+        grid.innerHTML = "";
+        cards.forEach(card => grid.appendChild(card));
+    }
+
+    function filterUsers() {
+        const input = document.getElementById('user-search');
+        const filter = input.value.toUpperCase();
+        const grid = document.getElementById('users-grid');
+        const cards = grid.getElementsByClassName('user-card');
+
+        for (let i = 0; i < cards.length; i++) {
+            const name = cards[i].getAttribute('data-name');
+            const id = cards[i].getAttribute('data-id');
+            if (name.toUpperCase().indexOf(filter) > -1 || id.indexOf(filter) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+
+    async function manageUser(id) {
+        // 1. Fetch current data
+        const res = await fetch(`/api/users?search=${id}`);
+        const data = await res.json();
+        if (!data.data || data.data.length === 0) {
+            Swal.fire('Error', 'User not found in API', 'error');
+            return;
+        }
+
+        // Find exact match
+        const user = data.data.find(u => u.user_id == id);
+        if (!user) {
+            Swal.fire('Error', 'User ID mismatch', 'error');
+            return;
+        }
+
+        // 2. Show Form
+        const { value: formValues } = await Swal.fire({
+            title: `Manage ${user.name}`,
+            html: `
+                <style>
+                    .swal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; }
+                    .swal-label { font-size: 0.8rem; color: #aaa; margin-bottom: 2px; display: block; }
+                    .swal-input { background: rgba(0,0,0,0.2) !important; color: white !important; border: 1px solid #444 !important; }
+                </style>
+                <div class="swal-grid">
+                    <div>
+                        <label class="swal-label">Wallet Balance</label>
+                        <input id="edit-wallet" type="number" class="swal2-input swal-input w-full m-0" value="${user.wallet}">
+                    </div>
+                    <div>
+                        <label class="swal-label">Bank Balance</label>
+                        <input id="edit-bank" type="number" class="swal2-input swal-input w-full m-0" value="${user.bank}">
+                    </div>
+                    <div>
+                        <label class="swal-label">Gacha Tickets</label>
+                        <input id="edit-tickets" type="number" class="swal2-input swal-input w-full m-0" value="${user.tickets}">
+                    </div>
+                    <div>
+                        <label class="swal-label">Salt</label>
+                        <input id="edit-salt" type="number" class="swal2-input swal-input w-full m-0" value="${user.salt}">
+                    </div>
+                    <div>
+                        <label class="swal-label">XP</label>
+                        <input id="edit-xp" type="number" class="swal2-input swal-input w-full m-0" value="${user.xp}">
+                    </div>
+                     <div>
+                        <label class="swal-label">Custom Title</label>
+                        <input id="edit-title" type="text" class="swal2-input swal-input w-full m-0" value="${user.custom_title || ''}">
+                    </div>
+                </div>
+            `,
+            focusConfirm: false,
+            background: '#0a0e27',
+            color: '#fff',
+            showCancelButton: true,
+            confirmButtonText: 'Save Changes',
+            preConfirm: () => {
+                return {
+                    user_id: id,
+                    wallet: document.getElementById('edit-wallet').value,
+                    bank: document.getElementById('edit-bank').value,
+                    tickets: document.getElementById('edit-tickets').value,
+                    salt: document.getElementById('edit-salt').value,
+                    xp: document.getElementById('edit-xp').value,
+                    custom_title: document.getElementById('edit-title').value
+                }
+            }
+        });
+
+        if (formValues) {
+            // 3. Send Update
+            const updateRes = await fetch('/api/admin/update-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formValues)
+            });
+            const result = await updateRes.json();
+
+            if (result.status === 'success') {
+                Swal.fire('Saved', 'User data updated successfully', 'success').then(() => location.reload());
+            } else {
+                Swal.fire('Error', result.message, 'error');
+            }
+        }
+    }
+
+    async function banUser(id) {
+        const { value: reason } = await Swal.fire({
+            title: 'Ban User?',
+            text: "This will ban the user from the Discord server.",
+            icon: 'warning',
+            input: 'text',
+            inputLabel: 'Reason',
+            inputPlaceholder: 'Violation of rules...',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, Ban!',
+            background: '#0a0e27',
+            color: '#fff'
+        });
+
+        if (reason) {
+            const res = await fetch('/api/admin/member-action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'BAN', user_id: id, reason: reason })
+            });
+            const result = await res.json();
+            Swal.fire('Sent', result.message, 'success');
+        }
+    }
+
+    // Quick Add Money Helper (kept for convenience)
+    async function addBalance(id) {
+        manageUser(id); // Redirect to main manager
+    }
+</script>
+{% endblock %}

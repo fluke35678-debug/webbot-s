@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}Item Shop{% endblock %}
+{% block page_title %}Global Marketplace{% endblock %}
+{% block page_subtitle %}Purchase items, buffs, and mystery boxes{% endblock %}
+
+{% block header_actions %}
+<div class="wallet-pill">
+    <i class="fa-solid fa-wallet"></i> <span id="shop-balance">Loading...</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="shop-container">
+
+    <!-- Shop Controls -->
+    <div class="shop-controls mb-8">
+        <div class="search-bar-wrapper">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search for items, roles, or buffs...">
+        </div>
+        <div class="category-filters">
+            <button class="filter-chip active">All</button>
+            <button class="filter-chip">Items</button>
+            <button class="filter-chip">Roles</button>
+            <button class="filter-chip">Pets</button>
+        </div>
+    </div>
+
+    <!-- Featured Section -->
+    <div class="section-separator">
+        <span class="sep-label">🔥 FEATURED ITEMS</span>
+        <div class="sep-line"></div>
+    </div>
+
+    <div class="grid-cols-3 mb-8">
+        <!-- New Mystery Box -->
+        <div class="card shop-card featured">
+            <div class="card-badge bg-gradient-secondary">NEW</div>
+            <div class="shop-img-container">
+                <i class="fa-solid fa-box-open shop-icon-lg floating-anim"></i>
+            </div>
+            <div class="shop-body">
+                <h3>Celestial Mystery Box</h3>
+                <p class="text-sm text-muted desc">Contains rare celestial items and high tier pets.</p>
+                <div class="price-tag">
+                    <i class="fa-solid fa-coins"></i> 5,000
+                </div>
+                <button class="btn btn-primary btn-block mt-3" onclick="buyItem('box_celestial')">Purchase</button>
+            </div>
+        </div>
+
+        <!-- VIP Role -->
+        <div class="card shop-card featured">
+            <div class="card-badge bg-warning">HOT</div>
+            <div class="shop-img-container">
+                <i class="fa-solid fa-crown shop-icon-lg text-warning glow-gold"></i>
+            </div>
+            <div class="shop-body">
+                <h3>VIP Membership (30 Days)</h3>
+                <p class="text-sm text-muted desc">2x EXP, custom color, and special access.</p>
+                <div class="price-tag">
+                    <i class="fa-solid fa-coins"></i> 25,000
+                </div>
+                <button class="btn btn-primary btn-block mt-3" onclick="buyItem('vip_30')">Purchase</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Regular Items Grid -->
+    <div class="section-separator">
+        <span class="sep-label">🛒 ALL ITEMS</span>
+        <div class="sep-line"></div>
+    </div>
+
+    <div class="grid-cols-4" id="shop-grid">
+        <!-- Example Items (Will be populated by JS ideally) -->
+        {% if items %}
+        {% for item in items %}
+        <div class="card shop-card">
+            <div class="shop-img-container">
+                <div class="shop-icon">
+                    {% if item.type == 'Role' %}🏷️{% elif item.type == 'Ticket' %}🎟️{% else %}📦{% endif %}
+                </div>
+            </div>
+            <div class="shop-body">
+                <h4>{{ item.name }}</h4>
+                <p class="text-xs text-muted truncate">Stock: {{ item.stock }}</p>
+                <div class="price-tag-sm">
+                    <i class="fa-solid fa-coins"></i> {{ item.price }}
+                </div>
+                <button class="btn btn-soft btn-sm btn-block mt-2" onclick="buyItem('{{ item.id }}')">Buy</button>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <!-- Placeholder Items for Look & Feel if no items exist -->
+        <div class="card shop-card">
+            <div class="shop-img-container">
+                <i class="fa-solid fa-shield-cat shop-icon"></i>
+            </div>
+            <div class="shop-body">
+                <h4>Pet Protection</h4>
+                <div class="price-tag-sm">
+                    <i class="fa-solid fa-coins"></i> 500
+                </div>
+                <button class="btn btn-soft btn-sm btn-block mt-2">Buy</button>
+            </div>
+        </div>
+
+        <div class="card shop-card">
+            <div class="shop-img-container">
+                <i class="fa-solid fa-flask shop-icon"></i>
+            </div>
+            <div class="shop-body">
+                <h4>EXP Potion</h4>
+                <div class="price-tag-sm">
+                    <i class="fa-solid fa-coins"></i> 1,200
+                </div>
+                <button class="btn btn-soft btn-sm btn-block mt-2">Buy</button>
+            </div>
+        </div>
+
+        <div class="card shop-card">
+            <div class="shop-img-container">
+                <i class="fa-solid fa-ticket shop-icon"></i>
+            </div>
+            <div class="shop-body">
+                <h4>Lottery Ticket</h4>
+                <div class="price-tag-sm">
+                    <i class="fa-solid fa-coins"></i> 100
+                </div>
+                <button class="btn btn-soft btn-sm btn-block mt-2">Buy</button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<style>
+    /* Page Specific Styles */
+    .shop-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--glass-border);
+        background: var(--gradient-glass);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .shop-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .shop-card.featured {
+        background: linear-gradient(145deg, rgba(100, 100, 255, 0.1), rgba(0, 0, 0, 0.4));
+        border: 1px solid rgba(130, 130, 255, 0.3);
+    }
+
+    .shop-img-container {
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.2);
+        margin: -1.5rem -1.5rem 1rem -1.5rem;
+        /* pull out to edges if needed, here we just use padding */
+        margin-bottom: 1rem;
+    }
+
+    .shop-icon {
+        font-size: 2.5rem;
+        color: #a5b4fc;
+    }
+
+    .shop-icon-lg {
+        font-size: 4rem;
+    }
+
+    .price-tag {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #fbbf24;
+        margin-top: 5px;
+    }
+
+    .price-tag-sm {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #fbbf24;
+        margin-top: 5px;
+    }
+
+    .wallet-pill {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 8px 16px;
+        border-radius: 50px;
+        border: 1px solid var(--glass-border);
+        font-weight: 600;
+        color: #fbbf24;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-chip {
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-chip.active,
+    .filter-chip:hover {
+        background: var(--gradient-primary);
+        color: white;
+    }
+
+    .search-bar-wrapper {
+        flex: 1;
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding-left: 2.5rem;
+        border-radius: 50px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--glass-border);
+        color: #fff;
+        padding-top: 0.6rem;
+        padding-bottom: 0.6rem;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+    }
+
+    .shop-controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #fff;
+        z-index: 2;
+    }
+
+    .bg-gradient-secondary {
+        background: var(--gradient-secondary);
+    }
+
+    .bg-warning {
+        background: #f59e0b;
+    }
+</style>
+
+<script>
+    function buyItem(itemId) {
+        Swal.fire({
+            title: 'Confirm Purchase',
+            text: `Do you want to buy this item?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Buy Now',
+            confirmButtonColor: '#667eea',
+            cancelButtonColor: '#d33',
+            background: '#0a0e27',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Purchased!',
+                    text: 'Item has been added to your inventory.',
+                    icon: 'success',
+                    background: '#0a0e27',
+                    color: '#fff',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        })
+    }
+
+    // Mock Balance Load
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('shop-balance').innerText = "50,240";
+    });
+</script>
+{% endblock %}

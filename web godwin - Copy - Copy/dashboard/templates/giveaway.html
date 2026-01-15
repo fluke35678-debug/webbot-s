@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Giveaways - Control Center{% endblock %}
+{% block page_title %}🎁 Giveaway System{% endblock %}
+
+{% block content %}
+<style>
+    .giveaway-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .gw-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .gw-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .gw-status.active {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+
+    .gw-status.ended {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+
+    .gw-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .gw-prize {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    .gw-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 1.5rem;
+    }
+
+    .gw-reqs {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .create-btn {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s;
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+
+    .create-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .input-group {
+        margin-bottom: 1rem;
+    }
+
+    .input-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .input-field {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.75rem;
+        border-radius: 8px;
+        color: white;
+    }
+
+    select.input-field option {
+        background: #1a1b23;
+    }
+</style>
+
+<button class="create-btn" onclick="document.getElementById('createModal').style.display='flex'">
+    🎉 Create New Giveaway
+</button>
+
+<div class="giveaway-grid">
+    {% for gw in giveaways %}
+    <div class="gw-card">
+        <div class="gw-status {{ gw.status }}">{{ gw.status }}</div>
+        <div class="gw-title">{{ gw.title }}</div>
+        <div class="gw-prize">🏆 {{ gw.prize_value }} ({{ gw.prize_type|upper }})</div>
+
+        <div class="gw-meta">
+            <div>Ends: {{ gw.end_time }}</div>
+            <div>Winners: {{ gw.winner_count }}</div>
+        </div>
+
+        {% if gw.requirements_json != '{}' %}
+        <div class="gw-reqs">
+            🔒 Requirements: {{ gw.requirements_json }}
+        </div>
+        {% endif %}
+
+        {% if gw.status == 'active' %}
+        <form action="/api/giveaway/end" method="POST" style="margin-top: 1rem;">
+            <input type="hidden" name="giveaway_id" value="{{ gw.id }}">
+            <button type="submit" class="danger-btn"
+                style="width: 100%; padding: 0.75rem; border-radius: 8px; background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444;">
+                End Now
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Create Modal -->
+<div id="createModal"
+    style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div
+        style="background: #1a1b23; padding: 2rem; border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+        <h2 style="margin-bottom: 1.5rem;">Create Giveaway</h2>
+        <form action="/api/giveaway/create" method="POST">
+            <div class="input-group">
+                <label class="input-label">Title</label>
+                <input type="text" name="title" class="input-field" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Prize Type</label>
+                <select name="prize_type" class="input-field">
+                    <option value="money">Money</option>
+                    <option value="ticket">Ticket</option>
+                    <option value="role">Role</option>
+                    <option value="custom">Custom Item</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Prize Value (Amount or Role ID)</label>
+                <input type="text" name="prize_value" class="input-field" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Winners Count</label>
+                <input type="number" name="winner_count" value="1" min="1" class="input-field">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">End Time (Hours from now)</label>
+                <input type="number" name="duration_hours" value="24" class="input-field">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Channel to Post</label>
+                <select name="channel_id" class="input-field">
+                    {% for cid, c in channels.items() %}
+                    <option value="{{ cid }}">#{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="button" onclick="document.getElementById('createModal').style.display='none'"
+                    style="flex: 1; padding: 1rem; border-radius: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer;">Cancel</button>
+                <button type="submit"
+                    style="flex: 2; padding: 1rem; border-radius: 8px; background: linear-gradient(135deg, #6366f1, #a855f7); border: none; color: white; font-weight: 700; cursor: pointer;">Create
+                    Giveaway</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
