@@ -1,0 +1,84 @@
+INFO:     Started server process [18555]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[Economy] Database initialized at /app/web godwin - Copy - Copy/economy.db
+----------------------------------------------------------------
+   GODWIN INTELLIGENCE DASHBOARD - STARTING NEW VERSION v2.0
+   VERIFYING ADMIN ROUTES...
+----------------------------------------------------------------
+>>> REGISTERED ROUTES:
+>>> REGISTERED ROUTES:
+   /openapi.json [HEAD,GET]
+   /docs [HEAD,GET]
+   /docs/oauth2-redirect [HEAD,GET]
+   /redoc [HEAD,GET]
+   /api/stats [GET]
+   /login_traditional [GET]
+   /login_traditional [POST]
+   /register [GET]
+   /register [POST]
+   /economy [GET]
+   /shop [GET]
+   /api/shop/send-item-embed [POST]
+   /api/shop/delete/{item_id} [DELETE]
+   /api/economy/mine/collect [POST]
+   /api/economy/mine/upgrade [POST]
+   /api/economy/mine/stats [GET]
+   /api/economy/fish [POST]
+   /api/economy/pet/interact [POST]
+   /settings [GET]
+   /api/admin/send-reward [POST]
+   /api/admin/update-user [POST]
+   /api/admin/member-action [POST]
+   /api/users [GET]
+   /api/logs [GET]
+   /api/gacha/pull [POST]
+   /gacha/pull [GET]
+   /token_checker [GET]
+   /api/check_tokens [POST]
+   /servers [GET]
+   /api/set_server/{guild_id} [POST]
+   /login_page [GET]
+   /login [GET]
+   /callback [GET]
+   /logout [GET]
+   / [GET]
+   /status [POST]
+   /users [GET]
+   /members [GET]
+   /users/update [POST]
+   /api/debug/roles [GET]
+   /api/roles/refresh [POST]
+   /gacha [GET]
+   /gacha/update [POST]
+   /achievements/update [POST]
+   /gacha/add [POST]
+   /gacha/delete [POST]
+   /gacha/bulk_update [POST]
+   /logs [GET]
+   /analytics [GET]
+   /api/embed/random [POST]
+   /chat [GET]
+   /api/channels [GET]
+   /api/messages/{channel_id} [GET]
+   /api/send-message [POST]
+   /api/messages/receive [POST]
+   /api/admin/env [POST]
+   /api/admin/env [GET]
+   /giveaways [GET]
+   /api/giveaway/create [POST]
+   /api/giveaway/end [POST]
+   /verification [GET]
+   /api/verification/update [POST]
+   /announcements [GET]
+   /api/announcements/create [POST]
+----------------------------------------------------------------
+>>> Dashboard Startup: Initializing Background Tasks...
+[Economy] Database initialized at /app/web godwin - Copy - Copy/economy.db
+>>> Economy Database Initialized
+[Scheduler] Refreshing Data Cache...
+[Scheduler] Refresh Complete.
+INFO:     127.0.0.1:60020 - "POST /register HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:42950 - "POST /login_traditional HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:42140 - "GET /login HTTP/1.1" 307 Temporary Redirect
